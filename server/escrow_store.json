@@ -1,0 +1,68 @@
+[
+  {
+    "id": "c6c3f707-fcf5-4856-b094-35856c9bfac1",
+    "product_id": "b581ab6e-37eb-45f1-b426-55f9ed487874",
+    "product_title": "Bike",
+    "buyer_id": "ak@gmail.com",
+    "seller_id": "ak",
+    "amount": 2000.0,
+    "currency": "INR",
+    "status": "AWAITING_SELLER",
+    "buyer_token": "4e3ccdad048e487d88914f4ffd421240",
+    "seller_token": "3112ceef2e0141ef85e5f38f716b3b66",
+    "created_at": "2025-11-24T07:40:27.542281",
+    "updated_at": "2025-11-24T07:40:27.542281",
+    "timeline": [
+      {
+        "id": "9b04e9e7-0dc1-4132-892f-258533a33170",
+        "action": "ESCROW_CREATED",
+        "actor": "system",
+        "timestamp": "2025-11-24T07:40:27.542281"
+      }
+    ]
+  },
+  {
+    "id": "e679a0d7-de36-458e-8672-d0796ef395a6",
+    "product_id": "b581ab6e-37eb-45f1-b426-55f9ed487874",
+    "product_title": "Bike",
+    "buyer_id": "hahdk",
+    "seller_id": "demo_user",
+    "amount": 200000.0,
+    "currency": "INR",
+    "status": "AWAITING_SELLER",
+    "buyer_token": "8d3d1a4083dd42c7956ff9eb2e9ee3dc",
+    "seller_token": "5f49a68e005a49bd9adff0482b6a12ce",
+    "created_at": "2026-01-14T13:58:30.172035",
+    "updated_at": "2026-01-14T13:58:30.172035",
+    "timeline": [
+      {
+        "id": "729abec0-1add-458a-bc6e-21396b2670eb",
+        "action": "ESCROW_CREATED",
+        "actor": "system",
+        "timestamp": "2026-01-14T13:58:30.172035"
+      }
+    ]
+  },
+  {
+    "id": "4f52fe4f-bfbd-4751-8cc2-b351eed188b7",
+    "product_id": "b581ab6e-37eb-45f1-b426-55f9ed487874",
+    "product_title": "Bike",
+    "buyer_id": "akddwag",
+    "seller_id": "demo_user",
+    "amount": 200000.0,
+    "currency": "INR",
+    "status": "AWAITING_SELLER",
+    "buyer_token": "aa5c130cb1c64da3a199f0ed039cdf95",
+    "seller_token": "0efdab2ac74a42acb8a456847718349e",
+    "created_at": "2026-02-01T16:56:24.169655",
+    "updated_at": "2026-02-01T16:56:24.169655",
+    "timeline": [
+      {
+        "id": "10107e57-cfd8-4ba9-a379-094a8f845761",
+        "action": "ESCROW_CREATED",
+        "actor": "system",
+        "timestamp": "2026-02-01T16:56:24.169655"
+      }
+    ]
+  }
+]

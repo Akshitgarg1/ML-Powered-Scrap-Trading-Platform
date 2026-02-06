@@ -1,0 +1,22 @@
+# Node
+node_modules/
+dist/
+build/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# ML
+*.h5
+*.pkl
+*.joblib
+data/
+datasets/
+
+# Environment
+.env
+
+# OS
+.DS_Store

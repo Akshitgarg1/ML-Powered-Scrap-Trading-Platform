@@ -1,0 +1,87 @@
+[
+  {
+    "thread_id": "b581ab6e-37eb-45f1-b426-55f9ed487874_demo_buyer_demo_user",
+    "product_id": "b581ab6e-37eb-45f1-b426-55f9ed487874",
+    "buyer_id": "demo_buyer",
+    "seller_id": "demo_user",
+    "created_at": "2025-11-29T10:38:02.590169",
+    "updated_at": "2026-02-01T16:57:58.036457",
+    "messages": [
+      {
+        "id": "42317c0d-fa6b-410f-b296-195b44b6e5fb",
+        "sender_id": "demo_buyer",
+        "content": "hi",
+        "timestamp": "2025-11-29T10:38:33.265311",
+        "read": false
+      },
+      {
+        "id": "8ad54783-cf2d-47f6-9fda-ebbe8eb55115",
+        "sender_id": "demo_buyer",
+        "content": "hi",
+        "timestamp": "2025-12-24T15:44:17.649118",
+        "read": false
+      },
+      {
+        "id": "30340bd8-5045-4ecc-ba11-ae5ccb1398b8",
+        "sender_id": "demo_buyer",
+        "content": "hi",
+        "timestamp": "2026-02-01T16:57:47.354250",
+        "read": false
+      }
+    ],
+    "status": "active",
+    "escrow_id": "4f52fe4f-bfbd-4751-8cc2-b351eed188b7"
+  },
+  {
+    "thread_id": "e9d69a87-1963-4d30-9bcc-a6907a8887b4_demo_buyer_demo_user",
+    "product_id": "e9d69a87-1963-4d30-9bcc-a6907a8887b4",
+    "buyer_id": "demo_buyer",
+    "seller_id": "demo_user",
+    "created_at": "2025-12-24T15:45:04.368561",
+    "updated_at": "2025-12-24T15:45:04.368561",
+    "messages": [],
+    "status": "active",
+    "escrow_id": null
+  },
+  {
+    "thread_id": "68c2d161-7a33-48ed-a480-eafb2365993a_demo_buyer_demo_user",
+    "product_id": "68c2d161-7a33-48ed-a480-eafb2365993a",
+    "buyer_id": "demo_buyer",
+    "seller_id": "demo_user",
+    "created_at": "2025-12-24T15:47:30.763449",
+    "updated_at": "2025-12-24T15:47:49.929930",
+    "messages": [
+      {
+        "id": "dcfc6c3f-670d-47c8-ab44-0308c8a05df1",
+        "sender_id": "demo_buyer",
+        "content": "hi",
+        "timestamp": "2025-12-24T15:47:49.929930",
+        "read": false
+      }
+    ],
+    "status": "active",
+    "escrow_id": null
+  },
+  {
+    "thread_id": "09eaf3eb-ea08-41e1-bccf-5d57bf6fc26f_demo_buyer_demo_user",
+    "product_id": "09eaf3eb-ea08-41e1-bccf-5d57bf6fc26f",
+    "buyer_id": "demo_buyer",
+    "seller_id": "demo_user",
+    "created_at": "2026-02-04T04:00:21.280246",
+    "updated_at": "2026-02-04T04:00:21.280246",
+    "messages": [],
+    "status": "active",
+    "escrow_id": null
+  },
+  {
+    "thread_id": "bdce6b75-7a22-40e2-bf9c-13101814a066_demo_buyer_demo_user",
+    "product_id": "bdce6b75-7a22-40e2-bf9c-13101814a066",
+    "buyer_id": "demo_buyer",
+    "seller_id": "demo_user",
+    "created_at": "2026-02-04T04:03:48.980098",
+    "updated_at": "2026-02-04T04:03:48.980098",
+    "messages": [],
+    "status": "active",
+    "escrow_id": null
+  }
+]

@@ -1,0 +1,280 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { createListing, uploadImage } from "../../services/api";
+import { LISTING_CATEGORY_OPTIONS } from "../../utils/constants";
+
+const UploadForm = () => {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category: "",
+    brand: "",
+    condition: "good",
+    price: "",
+    year: new Date().getFullYear(),
+    image: null,
+  });
+
+  const [imagePreview, setImagePreview] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+
+    if (type === "file") {
+      const file = files?.[0];
+      setFormData((prev) => ({ ...prev, image: file || null }));
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => setImagePreview(event.target.result);
+        reader.readAsDataURL(file);
+      } else {
+        setImagePreview("");
+      }
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    try {
+      let imageFilename = "";
+      if (formData.image) {
+        const uploadRes = await uploadImage(formData.image);
+        if (!uploadRes.success) {
+          throw new Error(uploadRes.error);
+        }
+        imageFilename = uploadRes.filename;
+      }
+
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        brand: formData.brand,
+        condition: formData.condition,
+        price: Number(formData.price),
+        year: Number(formData.year),
+        image_url: imageFilename ? `/uploads/${imageFilename}` : "",
+      };
+
+      const result = await createListing(payload);
+      if (result.success) {
+        setMessage("Product listed successfully.");
+        setFormData({
+          title: "",
+          description: "",
+          category: "",
+          brand: "",
+          condition: "good",
+          price: "",
+          year: new Date().getFullYear(),
+          image: null,
+        });
+        setImagePreview("");
+        setTimeout(() => navigate("/browse"), 1500);
+      }
+    } catch (err) {
+      setMessage(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fieldClass =
+    "input-field placeholder:text-white/40 text-sm md:text-base rounded-2xl";
+
+  return (
+    <div className="glass-panel-dark p-6 md:p-10">
+      <div className="flex flex-col gap-3 border-b border-white/5 pb-6">
+        <h2 className="text-3xl font-display font-semibold text-white">
+          List your product
+        </h2>
+        <p className="text-white/60">
+          Upload crisp imagery, highlight condition, and let our marketplace
+          polish the presentation for you.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-8 space-y-8">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <label className="glass-panel flex flex-col items-center justify-center gap-4 border-2 border-dashed border-white/15 p-6 text-center">
+            {imagePreview ? (
+              <>
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="h-40 w-full rounded-2xl object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImagePreview("");
+                    setFormData((prev) => ({ ...prev, image: null }));
+                  }}
+                  className="text-sm font-medium text-rose-200 hover:text-rose-100"
+                >
+                  Remove image
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="rounded-2xl bg-white/5 p-3 text-white">
+                  Upload preview
+                </div>
+                <p className="text-sm text-white/60">
+                  PNG, JPG, JPEG, WEBP up to 8MB
+                </p>
+                <span className="btn-ghost">Choose file</span>
+              </>
+            )}
+            <input
+              type="file"
+              name="image"
+              accept="image/*"
+              onChange={handleChange}
+              className="hidden"
+            />
+          </label>
+
+          <div className="space-y-5">
+            <div>
+              <label className="text-sm font-medium text-white/80">
+                Product title *
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                placeholder="Example: MacBook Pro 14”, 2023"
+                className={fieldClass}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-white/80">
+                Description *
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows="4"
+                required
+                placeholder="Highlight condition, accessories, upgrades..."
+                className={`${fieldClass} min-h-[140px] resize-none`}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          <div>
+            <label className="text-sm font-medium text-white/80">
+              Category *
+            </label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              required
+              className={fieldClass}
+            >
+              <option value="">Select category</option>
+              {LISTING_CATEGORY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-white/80">Brand</label>
+            <input
+              type="text"
+              name="brand"
+              value={formData.brand}
+              onChange={handleChange}
+              placeholder="Samsung, Nike, IKEA..."
+              className={fieldClass}
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          <div>
+            <label className="text-sm font-medium text-white/80">
+              Condition
+            </label>
+            <select
+              name="condition"
+              value={formData.condition}
+              onChange={handleChange}
+              className={fieldClass}
+            >
+              <option value="excellent">Like New</option>
+              <option value="good">Good</option>
+              <option value="fair">Fair</option>
+              <option value="poor">Needs Repair</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-white/80">
+              Purchase year
+            </label>
+            <input
+              type="number"
+              name="year"
+              min="2000"
+              max={new Date().getFullYear()}
+              value={formData.year}
+              onChange={handleChange}
+              className={fieldClass}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-white/80">
+            Price (₹) *
+          </label>
+          <input
+            type="number"
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            required
+            placeholder="Enter listing amount"
+            className={fieldClass}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-gradient w-full justify-center py-4 text-base disabled:opacity-60"
+        >
+          {loading ? "Listing product..." : "Publish listing"}
+        </button>
+
+        {message && (
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center text-white/80">
+            {message}
+          </div>
+        )}
+      </form>
+    </div>
+  );
+};
+
+export default UploadForm;

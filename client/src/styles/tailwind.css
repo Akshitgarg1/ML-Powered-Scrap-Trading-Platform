@@ -1,0 +1,53 @@
+@import url("https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-body bg-slate-950 text-slate-100 antialiased min-h-screen;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(90, 109, 255, 0.15), transparent 45%),
+      radial-gradient(circle at 80% 0%, rgba(236, 72, 153, 0.15), transparent 35%),
+      linear-gradient(180deg, #050816 0%, #050816 40%, #090b1a 100%);
+  }
+
+  ::selection {
+    @apply bg-brand-400/80 text-white;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/5 border border-white/10 rounded-3xl backdrop-blur-2xl shadow-glow;
+  }
+
+  .glass-panel-dark {
+    @apply bg-slate-900/70 border border-white/5 rounded-3xl backdrop-blur-xl shadow-2xl shadow-slate-950/40;
+  }
+
+  .btn-gradient {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-brand-500 via-indigo-500 to-purple-500 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:scale-[1.01] hover:shadow-indigo-500/50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-2xl border border-white/10 px-6 py-3 font-semibold text-white/80 transition hover:border-white/40 hover:text-white;
+  }
+
+  .input-field {
+    @apply w-full rounded-2xl border border-white/15 bg-slate-900/60 px-4 py-3 text-white placeholder-white/50 transition focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40;
+  }
+
+  .section-heading {
+    @apply text-3xl md:text-4xl font-display font-semibold tracking-tight text-white;
+  }
+
+  .subheading {
+    @apply text-base text-white/70;
+  }
+}
