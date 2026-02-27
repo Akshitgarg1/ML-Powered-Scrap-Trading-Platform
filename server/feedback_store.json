@@ -1,0 +1,21 @@
+{
+  "product_feedback": [
+    {
+      "id": "e0487157-0ab5-465e-a1dd-e859ca429ff2",
+      "product_id": "b581ab6e-37eb-45f1-b426-55f9ed487874",
+      "rating": 5,
+      "comment": "It Was a good Bike. I used to drive it daily.",
+      "user_name": "Akshit Garg",
+      "timestamp": "2026-02-07T16:13:03.889849"
+    },
+    {
+      "id": "3272ffe4-132d-4bb4-8a37-ec6d36334bb7",
+      "product_id": "e9d69a87-1963-4d30-9bcc-a6907a8887b4",
+      "rating": 4,
+      "comment": "Furniture is good but expensive",
+      "user_name": "Shivam",
+      "timestamp": "2026-02-07T16:46:50.122987"
+    }
+  ],
+  "general_feedback": []
+}

@@ -10,7 +10,21 @@
   }
 
   body {
-    @apply font-body bg-slate-950 text-slate-100 antialiased min-h-screen;
+    @apply font-body antialiased min-h-screen transition-colors duration-300;
+  }
+
+  /* Light mode - Default theme */
+  body {
+    @apply bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 text-gray-900;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1), transparent 45%),
+      radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.1), transparent 35%),
+      linear-gradient(135deg, #f0f9ff 0%, #faf5ff 50%, #fdf2f8 100%);
+  }
+
+  /* Dark mode */
+  body.dark {
+    @apply bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100;
     background-image:
       radial-gradient(circle at 20% 20%, rgba(90, 109, 255, 0.15), transparent 45%),
       radial-gradient(circle at 80% 0%, rgba(236, 72, 153, 0.15), transparent 35%),
@@ -23,31 +37,151 @@
 }
 
 @layer components {
+  /* Glass panels - Light & Dark */
   .glass-panel {
-    @apply bg-white/5 border border-white/10 rounded-3xl backdrop-blur-2xl shadow-glow;
+    @apply rounded-3xl backdrop-blur-xl transition-colors duration-300 shadow-md;
+    @apply bg-white/10 border-2 border-white/20;
+    @apply dark:bg-white/5 dark:border-white/10 dark:shadow-none dark:shadow-glow;
   }
 
   .glass-panel-dark {
-    @apply bg-slate-900/70 border border-white/5 rounded-3xl backdrop-blur-xl shadow-2xl shadow-slate-950/40;
+    @apply rounded-3xl backdrop-blur-xl transition-colors duration-300;
+    @apply bg-white/10 border-2 border-white/20 shadow-lg;
+    @apply dark:bg-white/5 dark:border-white/10 dark:shadow-2xl dark:shadow-slate-950/40;
   }
 
+  /* Section-specific backgrounds for light mode */
+  .section-hero {
+    @apply bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600;
+    @apply dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-slate-900;
+  }
+
+  .section-products {
+    @apply bg-gradient-to-b from-gray-50 to-blue-50;
+    @apply dark:bg-gradient-to-b dark:from-slate-950 dark:to-slate-900;
+  }
+
+  .section-features {
+    @apply bg-gradient-to-b from-gray-50 to-blue-50;
+    @apply dark:bg-gradient-to-b dark:from-slate-950 dark:to-slate-900;
+  }
+
+  .section-sell {
+    @apply bg-gradient-to-br from-purple-600 via-pink-600 to-purple-700;
+    @apply dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-slate-900;
+  }
+
+  .section-pricing {
+    @apply bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600;
+    @apply dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-slate-900;
+  }
+
+  .section-testimonials {
+    @apply bg-gradient-to-r from-orange-600 via-red-600 to-pink-600;
+    @apply dark:bg-gradient-to-r dark:from-slate-900 dark:via-slate-950 dark:to-slate-900;
+  }
+
+  .section-tools {
+    @apply bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600;
+    @apply dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-slate-900;
+  }
+
+  /* Buttons */
   .btn-gradient {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-brand-500 via-indigo-500 to-purple-500 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:scale-[1.01] hover:shadow-indigo-500/50;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-2xl border border-white/10 px-6 py-3 font-semibold text-white/80 transition hover:border-white/40 hover:text-white;
+    @apply inline-flex items-center justify-center rounded-2xl transition font-semibold;
+    @apply border border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:text-gray-900 hover:bg-gray-50;
+    @apply dark:border-white/10 dark:bg-transparent dark:text-white/80 dark:hover:border-white/40 dark:hover:text-white dark:hover:bg-white/5;
   }
 
+  /* Danger / destructive button */
+  .btn-danger {
+    @apply inline-flex items-center justify-center rounded-2xl px-4 py-2 font-semibold;
+    @apply bg-rose-600 text-white shadow-sm hover:bg-rose-500 active:scale-95 transition;
+  }
+
+  .btn-danger:disabled {
+    @apply bg-rose-300 text-white/80 opacity-60 cursor-not-allowed;
+  }
+
+  /* Input fields */
   .input-field {
-    @apply w-full rounded-2xl border border-white/15 bg-slate-900/60 px-4 py-3 text-white placeholder-white/50 transition focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40;
+    @apply w-full rounded-2xl border px-4 py-3 transition focus:outline-none focus:ring-2;
+    @apply bg-white/5 border-white/15 text-gray-900 placeholder-gray-500;
+    @apply dark:bg-slate-900/60 dark:border-white/15 dark:text-white dark:placeholder-white/50;
+    @apply focus:ring-blue-500/50 focus:border-blue-500;
   }
 
+  .select-field {
+    @apply w-full rounded-2xl border px-4 py-3 transition focus:outline-none focus:ring-2 appearance-none;
+    @apply bg-white/5 border-white/15 text-gray-900;
+    @apply dark:bg-slate-900/60 dark:border-white/15 dark:text-white;
+    @apply focus:ring-blue-500/50 focus:border-blue-500;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%9CA3AF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+  }
+
+  .dark .select-field {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%9CA3AF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  }
+
+  /* Text styles */
   .section-heading {
-    @apply text-3xl md:text-4xl font-display font-semibold tracking-tight text-white;
+    @apply text-3xl md:text-4xl font-display font-semibold tracking-tight transition-colors duration-300;
+    @apply text-gray-900;
+    @apply dark:text-white;
+  }
+
+  .section-subheading {
+    @apply text-xl font-semibold transition-colors duration-300;
+    @apply text-gray-800;
+    @apply dark:text-white/90;
   }
 
   .subheading {
-    @apply text-base text-white/70;
+    @apply text-base transition-colors duration-300;
+    @apply text-gray-600;
+    @apply dark:text-white/70;
+  }
+
+  .text-muted {
+    @apply text-gray-500;
+    @apply dark:text-gray-400;
+  }
+
+  /* Cards */
+  .card-light {
+    @apply bg-white border-2 border-gray-300 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300;
+    @apply dark:bg-slate-800/50 dark:border-white/10 dark:shadow-lg dark:border-white/10;
+  }
+
+  .card-featured {
+    @apply bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-8 shadow-2xl;
+    @apply dark:from-indigo-600 dark:to-purple-600;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .shadow-glow {
+    box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1), 0 10px 10px -5px rgba(59, 130, 246, 0.04);
+  }
+
+  .light .shadow-glow {
+    box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.05), 0 10px 10px -5px rgba(59, 130, 246, 0.02);
   }
 }

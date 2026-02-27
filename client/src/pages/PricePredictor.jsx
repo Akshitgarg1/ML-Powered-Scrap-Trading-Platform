@@ -3,7 +3,7 @@ import PriceSuggestion from "../components/listings/PriceSuggestion";
 
 const PricePredictor = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 py-12 px-4">
+    <div className="section-pricing min-h-screen py-12 px-4 transition-colors duration-300">
       <div className="mx-auto max-w-6xl">
         <PriceSuggestion />
       </div>

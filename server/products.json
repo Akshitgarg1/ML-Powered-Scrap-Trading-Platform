@@ -65,19 +65,6 @@
     "user_id": "demo_user"
   },
   {
-    "id": "68c2d161-7a33-48ed-a480-eafb2365993a",
-    "title": "Laptop",
-    "price": 30003.0,
-    "category": "electronics",
-    "description": "HP laptop",
-    "brand": "HP",
-    "condition": "good",
-    "year": 2025,
-    "image_url": "",
-    "created_at": "2025-12-24T21:17:21.694548",
-    "user_id": "demo_user"
-  },
-  {
     "id": "09eaf3eb-ea08-41e1-bccf-5d57bf6fc26f",
     "title": "Camera",
     "price": 3000.0,

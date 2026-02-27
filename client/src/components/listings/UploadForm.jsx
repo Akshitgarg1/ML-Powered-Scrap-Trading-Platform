@@ -91,15 +91,15 @@ const UploadForm = () => {
   };
 
   const fieldClass =
-    "input-field placeholder:text-white/40 text-sm md:text-base rounded-2xl";
+    "input-field placeholder-gray-500 text-sm md:text-base rounded-2xl";
 
   return (
-    <div className="glass-panel-dark p-6 md:p-10">
-      <div className="flex flex-col gap-3 border-b border-white/5 pb-6">
-        <h2 className="text-3xl font-display font-semibold text-white">
+    <div className="glass-panel-dark p-8 md:p-12 transition-colors duration-300 border border-white/10">
+      <div className="flex flex-col gap-3 border-b border-white/10 pb-6 transition-colors duration-300">
+        <h2 className="text-3xl font-display font-semibold text-gray-900 dark:text-white transition-colors duration-300">
           List your product
         </h2>
-        <p className="text-white/60">
+        <p className="text-gray-700 dark:text-white/70 transition-colors duration-300">
           Upload crisp imagery, highlight condition, and let our marketplace
           polish the presentation for you.
         </p>
@@ -107,7 +107,7 @@ const UploadForm = () => {
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-8">
         <div className="grid gap-6 lg:grid-cols-2">
-          <label className="glass-panel flex flex-col items-center justify-center gap-4 border-2 border-dashed border-white/15 p-6 text-center">
+          <label className="glass-panel flex flex-col items-center justify-center gap-4 border-2 border-dashed border-white/25 p-6 text-center cursor-pointer hover:border-white/40 transition-colors duration-300">
             {imagePreview ? (
               <>
                 <img
@@ -121,17 +121,17 @@ const UploadForm = () => {
                     setImagePreview("");
                     setFormData((prev) => ({ ...prev, image: null }));
                   }}
-                  className="text-sm font-medium text-rose-200 hover:text-rose-100"
+                  className="text-sm font-medium text-rose-300 hover:text-rose-200 transition-colors duration-300"
                 >
                   Remove image
                 </button>
               </>
             ) : (
               <>
-                <div className="rounded-2xl bg-white/5 p-3 text-white">
+                <div className="rounded-2xl bg-white/10 p-3 text-gray-900 dark:text-white transition-colors duration-300">
                   Upload preview
                 </div>
-                <p className="text-sm text-white/60">
+                <p className="text-sm text-gray-700 dark:text-white/60 transition-colors duration-300">
                   PNG, JPG, JPEG, WEBP up to 8MB
                 </p>
                 <span className="btn-ghost">Choose file</span>
@@ -148,7 +148,7 @@ const UploadForm = () => {
 
           <div className="space-y-5">
             <div>
-              <label className="text-sm font-medium text-white/80">
+              <label className="text-sm font-medium text-gray-800 dark:text-white/80 transition-colors duration-300">
                 Product title *
               </label>
               <input
@@ -162,7 +162,7 @@ const UploadForm = () => {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-white/80">
+              <label className="text-sm font-medium text-gray-800 dark:text-white/80 transition-colors duration-300">
                 Description *
               </label>
               <textarea
@@ -180,7 +180,7 @@ const UploadForm = () => {
 
         <div className="grid gap-5 md:grid-cols-2">
           <div>
-            <label className="text-sm font-medium text-white/80">
+            <label className="text-sm font-medium text-gray-800 dark:text-white/80 transition-colors duration-300">
               Category *
             </label>
             <select
@@ -199,7 +199,7 @@ const UploadForm = () => {
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium text-white/80">Brand</label>
+            <label className="text-sm font-medium text-gray-800 dark:text-white/80 transition-colors duration-300">Brand</label>
             <input
               type="text"
               name="brand"
@@ -213,7 +213,7 @@ const UploadForm = () => {
 
         <div className="grid gap-5 md:grid-cols-2">
           <div>
-            <label className="text-sm font-medium text-white/80">
+            <label className="text-sm font-medium text-gray-800 dark:text-white/80 transition-colors duration-300">
               Condition
             </label>
             <select
@@ -229,7 +229,7 @@ const UploadForm = () => {
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium text-white/80">
+            <label className="text-sm font-medium text-gray-800 dark:text-white/80 transition-colors duration-300">
               Purchase year
             </label>
             <input
@@ -245,7 +245,7 @@ const UploadForm = () => {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-white/80">
+          <label className="text-sm font-medium text-gray-800 dark:text-white/80 transition-colors duration-300">
             Price (₹) *
           </label>
           <input
@@ -268,7 +268,7 @@ const UploadForm = () => {
         </button>
 
         {message && (
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center text-white/80">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center text-gray-900 dark:text-white/80 transition-colors duration-300">
             {message}
           </div>
         )}

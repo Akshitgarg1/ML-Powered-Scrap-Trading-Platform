@@ -128,4 +128,21 @@ export const uploadImage = async (imageFile) => {
   return res.data;
 };
 
+// Feedback endpoints
+export const submitProductFeedback = async (feedbackData) => {
+  const res = await api.post("/feedback/product", feedbackData);
+  return res.data;
+};
+
+export const getProductFeedback = async (productId) => {
+  const res = await api.get(`/feedback/product/${productId}`);
+  return res.data;
+};
+
+export const submitGeneralFeedback = async (feedbackData) => {
+  const res = await api.post("/feedback/general", feedbackData);
+  return res.data;
+};
+
+
 export default api;

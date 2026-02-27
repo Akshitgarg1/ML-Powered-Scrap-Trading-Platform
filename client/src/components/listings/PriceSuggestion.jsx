@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatPrice } from "../../utils/formatPrice";
 import { predictPrice, getPriceRange } from "../../services/api";
 import { PRICE_CATEGORY_OPTIONS } from "../../utils/constants";
 import Loader from "../common/Loader";
@@ -92,15 +93,15 @@ const PriceSuggestion = () => {
   };
 
   const fieldClass =
-    "input-field placeholder:text-white/40 text-sm md:text-base";
+    "input-field placeholder-gray-500 text-sm md:text-base";
 
   return (
     <div className="glass-panel-dark p-6 sm:p-10">
       <div className="flex flex-col gap-4 border-b border-white/5 pb-6 text-center lg:text-left">
-        <h2 className="text-3xl font-display font-semibold text-white">
+        <h2 className="text-3xl font-display font-semibold text-gray-900 dark:text-white">
           Price Predictor
         </h2>
-        <p className="text-white/60">
+        <p className="text-gray-700 dark:text-white/60">
           Fill a few details and get an estimated resale price.
         </p>
       </div>
@@ -109,7 +110,7 @@ const PriceSuggestion = () => {
         <form onSubmit={handlePredict} className="space-y-6">
           <div className="grid gap-5 md:grid-cols-2">
             <div>
-              <label className="text-sm font-medium text-white/80">
+              <label className="text-sm font-medium text-gray-800 dark:text-white/80">
                 Category *
               </label>
               <select
@@ -128,7 +129,7 @@ const PriceSuggestion = () => {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-white/80">
+              <label className="text-sm font-medium text-gray-800 dark:text-white/80">
                 Brand *
               </label>
               <input
@@ -145,7 +146,7 @@ const PriceSuggestion = () => {
 
           <div className="grid gap-5 md:grid-cols-2">
             <div>
-              <label className="text-sm font-medium text-white/80">
+              <label className="text-sm font-medium text-gray-800 dark:text-white/80">
                 Original Price (₹) *
               </label>
               <input
@@ -159,7 +160,7 @@ const PriceSuggestion = () => {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-white/80">
+              <label className="text-sm font-medium text-gray-800 dark:text-white/80">
                 Age (Years) *
               </label>
               <input
@@ -177,7 +178,7 @@ const PriceSuggestion = () => {
 
           <div className="grid gap-5 md:grid-cols-2">
             <div>
-              <label className="text-sm font-medium text-white/80">
+              <label className="text-sm font-medium text-gray-800 dark:text-white/80">
                 Condition *
               </label>
               <select
@@ -195,7 +196,7 @@ const PriceSuggestion = () => {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-white/80">
+              <label className="text-sm font-medium text-gray-800 dark:text-white/80">
                 Location *
               </label>
               <input
@@ -229,9 +230,9 @@ const PriceSuggestion = () => {
 
         {prediction && !error && (
           <div className="mt-6 glass-panel p-6">
-            <p className="text-sm text-white/60">Estimated resale price</p>
-            <p className="mt-2 text-4xl font-semibold text-emerald-300">
-              ₹{prediction.predicted_price?.toLocaleString()}
+            <p className="text-sm text-gray-700 dark:text-white/60">Estimated resale price</p>
+            <p className="mt-2 text-4xl font-semibold text-gray-900 dark:text-emerald-300">
+              {formatPrice(prediction.predicted_price)}
             </p>
             {prediction.message && (
               <p className="mt-2 text-sm text-white/70">{prediction.message}</p>

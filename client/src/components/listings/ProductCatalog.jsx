@@ -1,13 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { deleteListing, getListings } from "../../services/api";
+import { deleteListing, getListings, getProductFeedback } from "../../services/api";
 import { LISTING_CATEGORY_OPTIONS } from "../../utils/constants";
+import ProductCard from "./ProductCard";
 
 const ProductCatalog = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [filtering, setFiltering] = useState(false);
+  const [sorting, setSorting] = useState(false);
+  const [sortBy, setSortBy] = useState("newest");
+  const [productRatings, setProductRatings] = useState({});
   const [filters, setFilters] = useState({
     category: "",
     min_price: "",
@@ -20,16 +24,97 @@ const ProductCatalog = () => {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    if (products.length > 0) {
+      applySort(products, sortBy);
+    }
+  }, [sortBy]);
+
   const fetchProducts = async (params = {}, { showLoader = true } = {}) => {
     if (showLoader) setLoading(true);
     try {
       const res = await getListings(params);
-      if (res.success) setProducts(res.products);
+      if (res.success) {
+        setProducts(res.products);
+        // Fetch ratings for all products
+        await fetchAllProductRatings(res.products);
+      }
     } catch {
       setProducts([]);
     } finally {
       if (showLoader) setLoading(false);
       setInitialLoad(false);
+    }
+  };
+
+  const fetchAllProductRatings = async (productsToRate) => {
+    try {
+      const ratings = {};
+      await Promise.all(
+        productsToRate.map(async (product) => {
+          try {
+            const res = await getProductFeedback(product.id);
+            if (res.success) {
+              ratings[product.id] = {
+                average_rating: res.average_rating || 0,
+                total_reviews: res.total_reviews || 0,
+              };
+            }
+          } catch (err) {
+            console.error(`Error fetching rating for ${product.id}:`, err);
+          }
+        })
+      );
+      setProductRatings(ratings);
+    } catch (err) {
+      console.error("Error fetching ratings:", err);
+    }
+  };
+
+  const applySort = async (productsToSort, sortType) => {
+    setSorting(true);
+    try {
+      let sorted = [...productsToSort];
+
+      switch (sortType) {
+        case "price-low":
+          sorted.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+          break;
+        case "price-high":
+          sorted.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+          break;
+        case "rating":
+          sorted.sort((a, b) => {
+            const ratingA = productRatings[a.id]?.average_rating || 0;
+            const ratingB = productRatings[b.id]?.average_rating || 0;
+            return ratingB - ratingA;
+          });
+          break;
+        case "condition":
+          const conditionOrder = { excellent: 0, good: 1, fair: 2, poor: 3 };
+          sorted.sort(
+            (a, b) =>
+              (conditionOrder[a.condition?.toLowerCase()] || 999) -
+              (conditionOrder[b.condition?.toLowerCase()] || 999)
+          );
+          break;
+        case "brand":
+          sorted.sort((a, b) => {
+            const brandA = (a.brand || "").toLowerCase().trim() || "zzz-no-brand";
+            const brandB = (b.brand || "").toLowerCase().trim() || "zzz-no-brand";
+            return brandA.localeCompare(brandB, 'en', { sensitivity: 'base' });
+          });
+          break;
+        case "newest":
+          sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          break;
+        default:
+          sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      setProducts(sorted);
+    } finally {
+      setSorting(false);
     }
   };
 
@@ -64,6 +149,7 @@ const ProductCatalog = () => {
 
   const clearFilters = () => {
     setFilters({ category: "", min_price: "", max_price: "" });
+    setSortBy("newest");
     fetchProducts({}, { showLoader: true });
   };
 
@@ -75,11 +161,11 @@ const ProductCatalog = () => {
   };
 
   const fieldClass =
-    "input-field placeholder:text-white/50 text-sm md:text-base rounded-2xl";
+    "input-field placeholder-gray-500 text-sm md:text-base rounded-2xl";
 
   if (initialLoad && loading) {
     return (
-      <div className="glass-panel-dark flex items-center justify-center py-16 text-white/70">
+      <div className="glass-panel-dark flex items-center justify-center py-16 text-gray-600 dark:text-white/70">
         Loading marketplace...
       </div>
     );
@@ -87,29 +173,31 @@ const ProductCatalog = () => {
 
   return (
     <div className="space-y-10 relative">
-      {!initialLoad && (loading || filtering) && (
+      {!initialLoad && (loading || filtering || sorting) && (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-3xl bg-slate-950/60 text-white/80 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-white/70"></div>
-            <span>{loading ? "Refreshing products..." : "Applying filters..."}</span>
+            <span>
+              {loading ? "Refreshing products..." : sorting ? "Sorting..." : "Applying filters..."}
+            </span>
           </div>
         </div>
       )}
       <div className="glass-panel-dark p-6">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-white/50">
+            <p className="text-xs uppercase tracking-[0.4em] text-gray-600 dark:text-white/50">
               Filter products
             </p>
-            <h3 className="text-2xl font-semibold text-white">
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Tune the inventory instantly.
             </h3>
           </div>
           <button onClick={clearFilters} className="btn-ghost text-sm">
-            Reset
+            Reset All
           </button>
         </div>
-        <div className="mt-6 grid gap-4 md:grid-cols-4">
+        <div className="mt-6 grid gap-4 md:grid-cols-5">
           <select
             name="category"
             value={filters.category}
@@ -139,6 +227,18 @@ const ProductCatalog = () => {
             placeholder="Max price (₹)"
             className={fieldClass}
           />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className={fieldClass}
+          >
+            <option value="newest">📅 Newest</option>
+            <option value="price-low">💰 Price: Low to High</option>
+            <option value="price-high">💎 Price: High to Low</option>
+            <option value="rating">⭐ Highest Rating</option>
+            <option value="condition">✨ Best Condition</option>
+            <option value="brand">🏷️ Brand (A-Z)</option>
+          </select>
           <Link to="/sell" className="btn-gradient text-sm">
             List an item
           </Link>
@@ -151,80 +251,26 @@ const ProductCatalog = () => {
             No products available. Be the first to add one!
           </div>
         ) : (
-          products.map((product) => {
-            const img = getImageUrl(product.image_url);
-            return (
-              <div
-                key={product.id}
-                className="glass-panel flex h-full flex-col overflow-hidden rounded-3xl border border-white/5 p-4"
-              >
-                <div className="h-56 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-slate-900 to-slate-900/40">
-                  {img ? (
-                    <img
-                      src={img}
-                      alt={product.title}
-                      className="h-full w-full object-cover transition hover:scale-105"
-                      onError={(e) => (e.currentTarget.style.display = "none")}
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-white/40">
-                      No image
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-wide text-white/60">
-                      {product.category || "General"}
-                    </span>
-                    <span className="text-2xl font-semibold text-emerald-300">
-                      ₹{product.price}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white line-clamp-2">
-                      {product.title}
-                    </h3>
-                    <p className="mt-2 text-sm text-white/70 line-clamp-2">
-                      {product.description}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-white/60">
-                    <span className="capitalize">{product.condition}</span>
-                    <span>{product.year}</span>
-                  </div>
-                  {product.brand && (
-                    <p className="text-sm text-white/60">Brand: {product.brand}</p>
-                  )}
-
-                  <div className="mt-auto flex gap-3">
-                    <Link
-                      to={`/product/${product.id}`}
-                      className="btn-gradient flex-1 justify-center text-sm"
-                    >
-                      View
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteProduct(product.id)}
-                      className="btn-ghost text-sm text-rose-200"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                  <p className="text-xs text-white/40">
-                    Listed on: {new Date(product.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            );
-          })
+          products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onDelete={handleDeleteProduct}
+              getImageUrl={getImageUrl}
+            />
+          ))
         )}
       </div>
 
       {products.length > 0 && (
         <div className="text-center text-white/60">
-          Showing {products.length} item{products.length > 1 ? "s" : ""}
+          Showing {products.length} item{products.length > 1 ? "s" : ""} • Sorted by{" "}
+          {sortBy === "newest" && "Newest"}
+          {sortBy === "price-low" && "Price: Low to High"}
+          {sortBy === "price-high" && "Price: High to Low"}
+          {sortBy === "rating" && "Highest Rating"}
+          {sortBy === "condition" && "Best Condition"}
+          {sortBy === "brand" && "Brand"}
         </div>
       )}
     </div>

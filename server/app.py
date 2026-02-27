@@ -7,6 +7,7 @@ from routes.ai_routes import ai_bp
 from routes.image_routes import image_bp
 from routes.product_routes import product_bp
 from routes.logo_routes import logo_bp
+from routes.feedback_routes import feedback_bp
 
 
 def create_app():
@@ -28,6 +29,7 @@ def create_app():
     app.register_blueprint(image_bp)
     app.register_blueprint(product_bp)
     app.register_blueprint(logo_bp)
+    app.register_blueprint(feedback_bp)
 
     # Route to serve uploaded files
     @app.route('/uploads/<filename>')
