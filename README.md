@@ -44,7 +44,7 @@ This platform solves these problems using intelligent ML pipelines and secure we
 | Fraud Detection | ❌ None | ✅ Logo Verification |
 | Image Search | ❌ Not Available | ✅ Deep Learning |
 | Personalized Recommendations | ❌ No | ✅ Content-Based Filtering |
-| Secure Transactions | ❌ Informal | ✅ Escrow System |
+| Secure Transactions | ❌ Informal | ✅ Production-Grade Escrow (Atomic + RBAC + Audit Trail) |
 | Digital Identity | ❌ Unverified | ✅ Firebase Authentication |
 
 ---
@@ -58,7 +58,7 @@ This platform solves these problems using intelligent ML pipelines and secure we
 | 🛡️ Fake Logo Verification | CNN-based model detects counterfeit brand logos to prevent fraud. |
 | 🎯 Personalized Recommendations | Recommends relevant items using content-based filtering. |
 | 🔐 Secure Authentication | Firebase Authentication for user login and role management. |
-| 💬 Messaging & Escrow System | Secure buyer–seller communication and transaction handling. |
+| 💬 Escrow V2 System | Atomic Firebase-based escrow with FSM state control, dispute lock, auto-refund & auto-release scheduler. |
 
 ---
 
@@ -141,9 +141,24 @@ npm run dev
 ### 3️⃣ Backend Setup
 ```text
 cd server
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
+```
+### 🔐 Firebase Admin Setup (Required for Escrow)
+
+- Generate Firebase Service Account Key
+- Place it inside:
+```bash
+server/serviceAccountKey.json
+```
+- Update databaseURL in app.py
+- Run:
+```text
 python app.py
 ```
+- ⚠️ serviceAccountKey.json is ignored via .gitignore.
+
 ---
 
 ## 🔐 Environment Variables
@@ -153,7 +168,6 @@ Create a .env file in both client and server folders for sensitive keys:
 FIREBASE_API_KEY=your_key_here
 FIREBASE_PROJECT_ID=your_project_id
 ```
-
 ---
 
 ## 📦 ML Models & Datasets
@@ -171,6 +185,33 @@ FIREBASE_PROJECT_ID=your_project_id
 - Environment variable isolation
 - No sensitive keys in repository
 
+---
+
+## 🔒 Escrow V2 Architecture (escrow-v2 Branch)
+
+- The escrow-v2 branch introduces a production-grade escrow system designed with:
+
+-- 🔁 Atomic Firebase Transactions
+
+-- 🔐 Role-Based Access Control (Buyer / Seller / Admin / System)
+
+-- 📊 Multi-State Synchronization (escrow_status, payment_status, shipment_status)
+
+-- ⏳ Auto-Refund (Shipping Timeout)
+
+-- ⏳ Auto-Release (Delivery Confirmation Timeout)
+
+-- 🛡️ Admin Lock Mechanism
+
+-- 📜 Immutable Audit Trail
+
+- All fund transitions are validated through a strict Finite State Machine (FSM).
+
+- Branch Info:
+```bash
+main        → Base Stable Version
+escrow-v2   → Hardened Escrow Production Version
+```
 ---
 
 ## 🌱 Sustainability Impact
