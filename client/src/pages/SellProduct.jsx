@@ -3,21 +3,25 @@ import UploadForm from "../components/listings/UploadForm";
 
 const SellProduct = () => {
   return (
-    <div className="section-sell min-h-screen py-16 px-4 transition-colors duration-300">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-10 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.35em] text-purple-300 dark:text-brand-300 transition-colors duration-300">
-            Sell smarter
-          </p>
-          <h1 className="mt-2 text-4xl font-display font-semibold text-white dark:text-white md:text-5xl transition-colors duration-300">
-            Showcase your product like a premium listing.
-          </h1>
-          <p className="mt-4 text-purple-100 dark:text-white/70 md:text-lg transition-colors duration-300">
-            Our guided form adds stunning previews, trust indicators, and AI
-            pricing so buyers convert faster.
-          </p>
+    <div className="min-h-screen py-10 transition-colors duration-500">
+      <div className="section-container text-center !pb-10">
+        <p className="text-sm font-bold uppercase tracking-[0.25em] text-brand-600 dark:text-brand-400">
+          Sell Faster & Smarter
+        </p>
+        <h1 className="mt-4 section-heading text-slate-900 dark:text-white">
+          List Your <span className="text-gradient">Pre-owned Assets</span>
+        </h1>
+        <p className="mt-6 mx-auto max-w-2xl text-slate-600 dark:text-slate-400 md:text-lg">
+          Our intelligent listing process helps you showcase products with trust indicators,
+          AI-driven pricing, and visual verification to attract serious buyers.
+        </p>
+      </div>
+
+      <div className="section-container !py-0">
+        <div className="glass-panel p-8 md:p-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/5 blur-3xl rounded-full"></div>
+          <UploadForm />
         </div>
-        <UploadForm />
       </div>
     </div>
   );

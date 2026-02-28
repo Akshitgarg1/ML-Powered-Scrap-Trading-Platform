@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { deleteListing, getListings, getProductFeedback } from "../../services/api";
 import { LISTING_CATEGORY_OPTIONS } from "../../utils/constants";
 import ProductCard from "./ProductCard";
 
 const ProductCatalog = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -16,13 +18,28 @@ const ProductCatalog = () => {
     category: "",
     min_price: "",
     max_price: "",
+    search: "",
   });
 
   const debounceRef = useRef(null);
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    const params = new URLSearchParams(location.search);
+    const search = params.get("search") || "";
+    const category = params.get("category") || "";
+
+    const initialFilters = {
+      category,
+      search,
+      min_price: "",
+      max_price: "",
+    };
+
+    setFilters(initialFilters);
+    fetchProducts(Object.fromEntries(
+      Object.entries(initialFilters).filter(([, v]) => v !== "")
+    ));
+  }, [location.search]);
 
   useEffect(() => {
     if (products.length > 0) {
@@ -148,9 +165,9 @@ const ProductCatalog = () => {
   };
 
   const clearFilters = () => {
-    setFilters({ category: "", min_price: "", max_price: "" });
+    setFilters({ category: "", min_price: "", max_price: "", search: "" });
     setSortBy("newest");
-    fetchProducts({}, { showLoader: true });
+    navigate(location.pathname);
   };
 
   const getImageUrl = (url) => {
@@ -161,7 +178,7 @@ const ProductCatalog = () => {
   };
 
   const fieldClass =
-    "input-field placeholder-gray-500 text-sm md:text-base rounded-2xl";
+    "input-field placeholder-gray-500 text-sm md:text-base rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10";
 
   if (initialLoad && loading) {
     return (
@@ -172,7 +189,7 @@ const ProductCatalog = () => {
   }
 
   return (
-    <div className="space-y-10 relative">
+    <div className="space-y-10 relative animation-fade-in">
       {!initialLoad && (loading || filtering || sorting) && (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-3xl bg-slate-950/60 text-white/80 backdrop-blur-sm">
           <div className="flex items-center gap-3">
@@ -185,19 +202,41 @@ const ProductCatalog = () => {
       )}
       <div className="glass-panel-dark p-6">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-gray-600 dark:text-white/50">
-              Filter products
-            </p>
-            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              Tune the inventory instantly.
-            </h3>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-brand-500/10 flex items-center justify-center shrink-0">
+              <svg className="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-gray-600 dark:text-white/50 font-bold">
+                Smart Marketplace
+              </p>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Find exactly what you need.
+              </h3>
+            </div>
           </div>
-          <button onClick={clearFilters} className="btn-ghost text-sm">
-            Reset All
+          <button onClick={clearFilters} className="text-sm font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors uppercase tracking-widest">
+            Clear Filters
           </button>
         </div>
-        <div className="mt-6 grid gap-4 md:grid-cols-5">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="lg:col-span-2 relative group">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              name="search"
+              value={filters.search}
+              onChange={handleFilterChange}
+              placeholder="Search items..."
+              className={`${fieldClass} pl-11 !bg-slate-50 dark:!bg-slate-950/50`}
+            />
+          </div>
           <select
             name="category"
             value={filters.category}
@@ -211,22 +250,24 @@ const ProductCatalog = () => {
               </option>
             ))}
           </select>
-          <input
-            type="number"
-            name="min_price"
-            value={filters.min_price}
-            onChange={handleFilterChange}
-            placeholder="Min price (₹)"
-            className={fieldClass}
-          />
-          <input
-            type="number"
-            name="max_price"
-            value={filters.max_price}
-            onChange={handleFilterChange}
-            placeholder="Max price (₹)"
-            className={fieldClass}
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              name="min_price"
+              value={filters.min_price}
+              onChange={handleFilterChange}
+              placeholder="Min ₹"
+              className={fieldClass}
+            />
+            <input
+              type="number"
+              name="max_price"
+              value={filters.max_price}
+              onChange={handleFilterChange}
+              placeholder="Max ₹"
+              className={fieldClass}
+            />
+          </div>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
@@ -248,16 +289,21 @@ const ProductCatalog = () => {
       <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {products.length === 0 ? (
           <div className="glass-panel-dark col-span-full p-10 text-center text-white/70">
-            No products available. Be the first to add one!
+            No items found. Refine your search!
           </div>
         ) : (
-          products.map((product) => (
-            <ProductCard
+          products.map((product, index) => (
+            <div
               key={product.id}
-              product={product}
-              onDelete={handleDeleteProduct}
-              getImageUrl={getImageUrl}
-            />
+              className="animate-slide-up"
+              style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
+            >
+              <ProductCard
+                product={product}
+                onDelete={handleDeleteProduct}
+                getImageUrl={getImageUrl}
+              />
+            </div>
           ))
         )}
       </div>

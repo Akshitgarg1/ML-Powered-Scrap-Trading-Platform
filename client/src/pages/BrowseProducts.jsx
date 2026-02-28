@@ -3,21 +3,24 @@ import ProductCatalog from "../components/listings/ProductCatalog";
 
 const BrowseProducts = () => {
   return (
-    <div className="section-products min-h-screen py-16 px-4 transition-colors duration-300">
-      <div className="mx-auto max-w-6xl text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-indigo-600 dark:text-brand-100 transition-colors duration-300">
-          Curated marketplace
+    <div className="min-h-screen py-10 transition-colors duration-500">
+      <div className="section-container text-center !pb-10">
+        <p className="text-sm font-bold uppercase tracking-[0.25em] text-brand-600 dark:text-brand-400">
+          Curated Marketplace
         </p>
-        <h1 className="mt-2 text-4xl font-display font-semibold text-gray-900 dark:text-white md:text-5xl transition-colors duration-300">
-          Browse premium, pre-loved inventory.
+        <h1 className="mt-4 section-heading">
+          Explore Premium <span className="text-gradient">Second-Hand Inventory</span>
         </h1>
-        <p className="mt-4 text-gray-600 dark:text-white/70 md:text-lg transition-colors duration-300">
-          Filter by category, price, or authenticity signals. Every card uses the
-          new glass aesthetic for an elevated experience.
+        <p className="mt-6 mx-auto max-w-2xl text-slate-600 dark:text-slate-400 md:text-lg">
+          Connect with trusted sellers and browse high-quality pre-owned products.
+          Use our AI filters to find specific items or verify authenticity instantly.
         </p>
       </div>
-      <div className="mx-auto mt-12 max-w-6xl">
-        <ProductCatalog />
+
+      <div className="section-container !py-0">
+        <div className="glass-panel p-1">
+          <ProductCatalog />
+        </div>
       </div>
     </div>
   );

@@ -62,16 +62,23 @@ const FeedbackList = ({ productId }) => {
 
   const RatingStars = ({ rating }) => {
     return (
-      <div className="flex gap-1">
+      <div className="flex gap-1 items-center">
         {[1, 2, 3, 4, 5].map((star) => (
-          <span
+          <svg
             key={star}
-            className={`text-lg ${
-              star <= rating ? "text-yellow-400" : "text-gray-300 dark:text-white/20"
-            }`}
+            className={`w-5 h-5 transition-colors duration-300 ${star <= rating
+              ? "text-yellow-400 fill-current drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]"
+              : "text-gray-300 dark:text-gray-700 fill-current"
+              }`}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            ★
-          </span>
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
         ))}
       </div>
     );
@@ -89,19 +96,15 @@ const FeedbackList = ({ productId }) => {
           {/* Rating Summary */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Average Rating */}
-            <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-6 transition-colors duration-300">
-              <p className="text-gray-600 dark:text-white/60 text-sm mb-2 transition-colors duration-300">Average Rating</p>
-              <div className="flex items-center gap-3">
-                <div className="text-4xl font-bold text-yellow-400">
-                  {averageRating.toFixed(1)}
-                </div>
-                <div className="flex flex-col">
-                  <RatingStars rating={Math.round(averageRating)} />
-                  <p className="text-gray-500 dark:text-white/50 text-xs mt-2 transition-colors duration-300">
-                    {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
-                  </p>
-                </div>
+            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-500/5 dark:to-amber-500/5 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-colors duration-300">
+              <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest mb-4">Average Rating</p>
+              <div className="text-5xl font-display font-black text-yellow-500 mb-2">
+                {averageRating.toFixed(1)}
               </div>
+              <RatingStars rating={Math.round(averageRating)} />
+              <p className="text-gray-500 dark:text-gray-500 text-xs mt-4 font-medium transition-colors duration-300">
+                Based on <span className="text-gray-900 dark:text-white">{totalReviews}</span> {totalReviews === 1 ? "Verified Review" : "Verified Reviews"}
+              </p>
             </div>
 
             {/* Rating Distribution */}
@@ -112,18 +115,18 @@ const FeedbackList = ({ productId }) => {
                   const count = feedbacks.filter((f) => f.rating === stars).length;
                   const percentage = totalReviews ? (count / totalReviews) * 100 : 0;
                   return (
-                    <div key={stars} className="flex items-center gap-3">
-                      <span className="text-gray-600 dark:text-white/60 text-sm w-24 text-right transition-colors duration-300">
-                        {stars} Star{stars !== 1 ? "s" : ""}
+                    <div key={stars} className="flex items-center gap-4 group">
+                      <span className="text-gray-600 dark:text-gray-400 text-sm w-12 font-medium transition-colors duration-300 group-hover:text-yellow-500">
+                        {stars} ★
                       </span>
-                      <div className="flex-1 bg-gray-200 dark:bg-white/10 rounded-full h-2 overflow-hidden transition-colors duration-300">
+                      <div className="flex-1 bg-gray-200 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden transition-colors duration-300 relative">
                         <div
-                          className="h-full bg-yellow-400/70 transition-all duration-300"
+                          className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(250,204,21,0.2)]"
                           style={{ width: `${percentage}%` }}
                         ></div>
                       </div>
-                      <span className="text-gray-500 dark:text-white/50 text-sm w-10 text-right transition-colors duration-300">
-                        {count}
+                      <span className="text-gray-500 dark:text-gray-500 text-xs w-10 text-right font-mono transition-colors duration-300">
+                        {Math.round(percentage)}%
                       </span>
                     </div>
                   );

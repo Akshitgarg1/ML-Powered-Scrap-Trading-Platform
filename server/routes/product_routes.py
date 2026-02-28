@@ -150,6 +150,7 @@ def get_listings():
         category = request.args.get("category")
         min_price = request.args.get("min_price")
         max_price = request.args.get("max_price")
+        search = request.args.get("search")
 
         filtered = products
 
@@ -161,6 +162,34 @@ def get_listings():
 
         if max_price:
             filtered = [p for p in filtered if p["price"] <= float(max_price)]
+
+        if search:
+            search_term = search.lower()
+            scored_products = []
+            for p in filtered:
+                score = 0
+                title_lower = p["title"].lower()
+                desc_lower = p["description"].lower()
+                
+                if search_term == title_lower:
+                    score += 100
+                elif title_lower.startswith(search_term):
+                    score += 50
+                elif search_term in title_lower:
+                    score += 20
+                
+                if search_term in desc_lower:
+                    score += 10
+                
+                if score > 0:
+                    p["_search_score"] = score
+                    scored_products.append(p)
+            
+            scored_products.sort(key=lambda x: x["_search_score"], reverse=True)
+            # Remove the temporary score key before sending
+            for p in scored_products:
+                p.pop("_search_score", None)
+            filtered = scored_products
 
         return jsonify({
             "success": True,

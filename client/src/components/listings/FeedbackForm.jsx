@@ -99,17 +99,22 @@ const FeedbackForm = ({ productId, productName }) => {
                     onMouseEnter={() => setHoverRating(r)}
                     onMouseLeave={() => setHoverRating(0)}
                     onClick={() => setRating(r)}
-                    className="transition duration-200 transform hover:scale-110"
+                    className="transition duration-200 transform hover:scale-110 group"
                   >
-                    <span
-                      className={`text-4xl transition ${
-                        r <= (hoverRating || rating)
-                          ? "text-yellow-400 drop-shadow-lg"
-                          : "text-gray-300 dark:text-white/20"
-                      }`}
+                    <svg
+                      className={`w-10 h-10 transition-all duration-300 ${r <= (hoverRating || rating)
+                          ? "text-yellow-400 fill-current drop-shadow-[0_0_12px_rgba(250,204,21,0.5)] scale-110"
+                          : "text-gray-300 dark:text-gray-700 fill-current"
+                        }`}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     >
-                      ★
-                    </span>
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
                   </button>
                 ))}
               </div>

@@ -1,0 +1,13 @@
+{
+  "product_feedback": [
+    {
+      "id": "60642404-08a4-4032-bd0c-f10caf5a4d2b",
+      "product_id": "11fb748c-9b22-4b01-a411-688df324d6de",
+      "rating": 5,
+      "comment": "Good Product",
+      "user_name": "Akshit",
+      "timestamp": "2026-02-28T12:32:39.282239"
+    }
+  ],
+  "general_feedback": []
+}

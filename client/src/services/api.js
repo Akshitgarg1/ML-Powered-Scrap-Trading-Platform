@@ -139,10 +139,21 @@ export const getProductFeedback = async (productId) => {
   return res.data;
 };
 
-export const submitGeneralFeedback = async (feedbackData) => {
-  const res = await api.post("/feedback/general", feedbackData);
+// ---------------------- ESCROW TRANSACTIONS ----------------------
+
+export const initializeEscrow = async (data) => {
+  const res = await api.post("/escrow/order", data);
   return res.data;
 };
 
+export const processEscrowAction = async (data) => {
+  const res = await api.post("/escrow/process-action", data);
+  return res.data;
+};
+
+export const getEscrowDetails = async (escrowId) => {
+  const res = await api.get(`/escrow/${escrowId}`);
+  return res.data;
+};
 
 export default api;

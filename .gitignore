@@ -20,3 +20,11 @@ datasets/
 
 # OS
 .DS_Store
+
+
+server/serviceAccountKey.json
+.env
+venv/
+__pycache__/
+node_modules/
+uploads/
