@@ -1,3 +1,5 @@
+
+
 # IMPORT TENSORFLOW FIRST (CRITICAL FOR WINDOWS DLLs)
 try:
     import tensorflow as tf
@@ -7,6 +9,7 @@ except Exception as e:
 
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
+from dotenv import load_dotenv
 import os
 import firebase_admin
 from firebase_admin import credentials, db
@@ -27,6 +30,13 @@ from routes.user_ratings_routes import ratings_bp
 from routes.watchlist_routes import watchlist_bp
 from routes.category_routes import category_bp
 from routes.shipment_routes import shipment_bp
+
+# Load environment variables FIRST
+load_dotenv()
+app = Flask(__name__)
+
+# Then use them
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 def create_app():
     """Initializes and configures the Flask application."""
@@ -50,7 +60,7 @@ def create_app():
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     # Basic configuration
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
 
     # Ensure uploads folder exists
