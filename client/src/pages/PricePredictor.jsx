@@ -1,5 +1,5 @@
 import React from "react";
-import PriceSuggestion from "../components/listings/PriceSuggestion";
+import PriceSuggestion from "../components/ai_features/PriceSuggestion";
 
 const PricePredictor = () => {
   return (

@@ -1,56 +1,36 @@
-"""In-app messaging routes with escrow integration."""
+"""In-app messaging routes with escrow integration, backed by Firebase RTDB."""
 
-import json
-import os
 import uuid
 from datetime import datetime
 from flask import Blueprint, jsonify, request
+from firebase_admin import db
+from utils.firebase_db import MessagesAPI, ProductsAPI
 
 messaging_bp = Blueprint("messaging", __name__, url_prefix="/api/messaging")
-
-MESSAGES_STORE = "messages_store.json"
-
-
-def load_messages():
-    """Load all message threads from storage."""
-    if os.path.exists(MESSAGES_STORE):
-        with open(MESSAGES_STORE, "r") as f:
-            return json.load(f)
-    return []
-
-
-def save_messages(threads):
-    """Save message threads to storage."""
-    with open(MESSAGES_STORE, "w") as f:
-        json.dump(threads, f, indent=2)
 
 
 def get_or_create_thread(product_id, buyer_id, seller_id):
     """Get existing thread or create new one for buyer-seller conversation."""
-    threads = load_messages()
     thread_id = f"{product_id}_{buyer_id}_{seller_id}"
     
-    existing = next(
-        (t for t in threads if t["thread_id"] == thread_id), None
-    )
-    
+    existing = MessagesAPI.get_thread(thread_id)
     if existing:
-        return threads, existing
+        return existing
     
     new_thread = {
-        "thread_id": thread_id,
+        "id": thread_id,
         "product_id": product_id,
         "buyer_id": buyer_id,
         "seller_id": seller_id,
         "created_at": datetime.utcnow().isoformat(),
         "updated_at": datetime.utcnow().isoformat(),
-        "messages": [],
+        "messages": {},
         "status": "active",  # active, sold, closed
         "escrow_id": None,
     }
-    threads.append(new_thread)
-    save_messages(threads)
-    return threads, new_thread
+    
+    MessagesAPI.create_thread(thread_id, new_thread)
+    return new_thread
 
 
 @messaging_bp.route("/threads", methods=["GET"])
@@ -60,21 +40,30 @@ def list_threads():
     if not user_id:
         return jsonify({"success": False, "error": "user_id required"}), 400
     
-    threads = load_messages()
-    user_threads = [
-        t for t in threads
-        if t["buyer_id"] == user_id or t["seller_id"] == user_id
-    ]
+    user_threads = MessagesAPI.get_user_threads(user_id)
     
     # Sort by most recent message
     for thread in user_threads:
-        if thread["messages"]:
-            thread["last_message"] = thread["messages"][-1]
+        messages = thread.get("messages", {})
+        if messages and isinstance(messages, dict):
+            # Sort messages to find the last one
+            msg_list = list(messages.values())
+            msg_list.sort(key=lambda x: x.get("timestamp", ""))
+            thread["last_message"] = msg_list[-1] if msg_list else None
+        elif messages and isinstance(messages, list):
+            # Fallback if messages are stored as list
+            thread["last_message"] = messages[-1] if messages else None
         else:
             thread["last_message"] = None
+            
+        # Standardize messages format for frontend
+        if isinstance(messages, dict):
+            thread["messages"] = list(messages.values())
+            thread["messages"].sort(key=lambda x: x.get("timestamp", ""))
     
+    # Safely get timestamp or fallback to empty string and sort
     user_threads.sort(
-        key=lambda x: x["last_message"]["timestamp"] if x["last_message"] else x["created_at"],
+        key=lambda x: (x.get("last_message") or {}).get("timestamp", x.get("created_at", "")),
         reverse=True
     )
     
@@ -84,11 +73,15 @@ def list_threads():
 @messaging_bp.route("/thread/<thread_id>", methods=["GET"])
 def get_thread(thread_id):
     """Get a specific message thread with all messages."""
-    threads = load_messages()
-    thread = next((t for t in threads if t["thread_id"] == thread_id), None)
+    thread = MessagesAPI.get_thread(thread_id)
     
     if not thread:
         return jsonify({"success": False, "error": "Thread not found"}), 404
+        
+    messages = thread.get("messages", {})
+    if isinstance(messages, dict):
+        thread["messages"] = list(messages.values())
+        thread["messages"].sort(key=lambda x: x.get("timestamp", ""))
     
     return jsonify({"success": True, "thread": thread}), 200
 
@@ -102,10 +95,16 @@ def create_or_get_thread():
         if not data.get(field):
             return jsonify({"success": False, "error": f"Missing {field}"}), 400
     
-    threads, thread = get_or_create_thread(
+    thread = get_or_create_thread(
         data["product_id"], data["buyer_id"], data["seller_id"]
     )
     
+    # Ensure messages is a list format for UI
+    messages = thread.get("messages", {})
+    if isinstance(messages, dict):
+        thread["messages"] = list(messages.values())
+        thread["messages"].sort(key=lambda x: x.get("timestamp", ""))
+        
     return jsonify({"success": True, "thread": thread}), 200
 
 
@@ -118,28 +117,26 @@ def send_message(thread_id):
         if not data.get(field):
             return jsonify({"success": False, "error": f"Missing {field}"}), 400
     
-    threads = load_messages()
-    thread = next((t for t in threads if t["thread_id"] == thread_id), None)
-    
+    thread = MessagesAPI.get_thread(thread_id)
     if not thread:
         return jsonify({"success": False, "error": "Thread not found"}), 404
     
-    if data["sender_id"] not in [thread["buyer_id"], thread["seller_id"]]:
+    if data["sender_id"] not in [thread.get("buyer_id"), thread.get("seller_id")]:
         return jsonify({"success": False, "error": "Unauthorized sender"}), 403
     
+    msg_id = str(uuid.uuid4())
     message = {
-        "id": str(uuid.uuid4()),
+        "id": msg_id,
         "sender_id": data["sender_id"],
         "content": data["content"],
         "timestamp": datetime.utcnow().isoformat(),
         "read": False,
     }
     
-    thread["messages"].append(message)
-    thread["updated_at"] = datetime.utcnow().isoformat()
-    save_messages(threads)
-    
-    return jsonify({"success": True, "message": message}), 201
+    success = MessagesAPI.add_message(thread_id, msg_id, message)
+    if success:
+        return jsonify({"success": True, "message": message}), 201
+    return jsonify({"success": False, "error": "Failed to add message"}), 500
 
 
 @messaging_bp.route("/thread/<thread_id>/mark-read", methods=["POST"])
@@ -150,18 +147,22 @@ def mark_read(thread_id):
     if not user_id:
         return jsonify({"success": False, "error": "user_id required"}), 400
     
-    threads = load_messages()
-    thread = next((t for t in threads if t["thread_id"] == thread_id), None)
-    
+    thread = MessagesAPI.get_thread(thread_id)
     if not thread:
         return jsonify({"success": False, "error": "Thread not found"}), 404
-    
-    for msg in thread["messages"]:
-        if msg["sender_id"] != user_id:
-            msg["read"] = True
-    
-    save_messages(threads)
-    return jsonify({"success": True}), 200
+        
+    messages = thread.get("messages", {})
+    if not messages:
+        return jsonify({"success": True}), 200
+        
+    try:
+        if isinstance(messages, dict):
+            for msg_id, msg in messages.items():
+                if msg.get("sender_id") != user_id and not msg.get("read"):
+                    db.reference(f'messages/{thread_id}/messages/{msg_id}/read').set(True)
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @messaging_bp.route("/thread/<thread_id>/link-escrow", methods=["POST"])
@@ -172,17 +173,17 @@ def link_escrow(thread_id):
     if not escrow_id:
         return jsonify({"success": False, "error": "escrow_id required"}), 400
     
-    threads = load_messages()
-    thread = next((t for t in threads if t["thread_id"] == thread_id), None)
-    
+    thread = MessagesAPI.get_thread(thread_id)
     if not thread:
         return jsonify({"success": False, "error": "Thread not found"}), 404
-    
-    thread["escrow_id"] = escrow_id
-    thread["updated_at"] = datetime.utcnow().isoformat()
-    save_messages(threads)
-    
-    return jsonify({"success": True, "thread": thread}), 200
+        
+    try:
+        db.reference(f'messages/{thread_id}/escrow_id').set(escrow_id)
+        db.reference(f'messages/{thread_id}/updated_at').set(datetime.utcnow().isoformat())
+        thread["escrow_id"] = escrow_id
+        return jsonify({"success": True, "thread": thread}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @messaging_bp.route("/thread/<thread_id>/mark-sold", methods=["POST"])
@@ -193,41 +194,42 @@ def mark_sold(thread_id):
     if not user_id:
         return jsonify({"success": False, "error": "user_id required"}), 400
     
-    threads = load_messages()
-    thread = next((t for t in threads if t["thread_id"] == thread_id), None)
-    
+    thread = MessagesAPI.get_thread(thread_id)
     if not thread:
         return jsonify({"success": False, "error": "Thread not found"}), 404
     
-    if thread["seller_id"] != user_id:
+    if thread.get("seller_id") != user_id:
         return jsonify({"success": False, "error": "Only seller can mark as sold"}), 403
-    
-    thread["status"] = "sold"
-    thread["updated_at"] = datetime.utcnow().isoformat()
-    
-    # Add system message
-    system_msg = {
-        "id": str(uuid.uuid4()),
-        "sender_id": "system",
-        "content": "✅ Product marked as sold. Transaction completed.",
-        "timestamp": datetime.utcnow().isoformat(),
-        "read": False,
-        "is_system": True,
-    }
-    thread["messages"].append(system_msg)
-    
-    save_messages(threads)
-    
-    # Update product status in products.json
-    from routes.product_routes import load_products, save_products
-    products = load_products()
-    product = next((p for p in products if p["id"] == thread["product_id"]), None)
-    if product:
-        product["status"] = "sold"
-        product["sold_at"] = datetime.utcnow().isoformat()
-        save_products(products)
-    
-    return jsonify({"success": True, "thread": thread}), 200
+        
+    try:
+        timestamp = datetime.utcnow().isoformat()
+        db.reference(f'messages/{thread_id}/status').set("sold")
+        db.reference(f'messages/{thread_id}/updated_at').set(timestamp)
+        
+        # Add system message
+        msg_id = str(uuid.uuid4())
+        system_msg = {
+            "id": msg_id,
+            "sender_id": "system",
+            "content": "✅ Product marked as sold. Transaction completed.",
+            "timestamp": timestamp,
+            "read": False,
+            "is_system": True,
+        }
+        MessagesAPI.add_message(thread_id, msg_id, system_msg)
+        
+        # Update product status 
+        product_id = thread.get("product_id")
+        if product_id:
+            ProductsAPI.update(product_id, {
+                "status": "sold",
+                "sold_at": timestamp
+            })
+            
+        thread["status"] = "sold"
+        return jsonify({"success": True, "thread": thread}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @messaging_bp.route("/thread/<thread_id>/close", methods=["POST"])
@@ -238,18 +240,18 @@ def close_thread(thread_id):
     if not user_id:
         return jsonify({"success": False, "error": "user_id required"}), 400
     
-    threads = load_messages()
-    thread = next((t for t in threads if t["thread_id"] == thread_id), None)
-    
+    thread = MessagesAPI.get_thread(thread_id)
     if not thread:
         return jsonify({"success": False, "error": "Thread not found"}), 404
     
-    if user_id not in [thread["buyer_id"], thread["seller_id"]]:
+    if user_id not in [thread.get("buyer_id"), thread.get("seller_id")]:
         return jsonify({"success": False, "error": "Unauthorized"}), 403
-    
-    thread["status"] = "closed"
-    thread["updated_at"] = datetime.utcnow().isoformat()
-    save_messages(threads)
-    
-    return jsonify({"success": True, "thread": thread}), 200
+        
+    try:
+        db.reference(f'messages/{thread_id}/status').set("closed")
+        db.reference(f'messages/{thread_id}/updated_at').set(datetime.utcnow().isoformat())
+        thread["status"] = "closed"
+        return jsonify({"success": True, "thread": thread}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 

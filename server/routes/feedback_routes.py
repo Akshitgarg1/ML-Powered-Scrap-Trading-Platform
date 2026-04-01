@@ -1,56 +1,93 @@
 from flask import Blueprint, request, jsonify
-import json
-import os
 from datetime import datetime
 import uuid
+from utils.firebase_db import FeedbackAPI
 
 feedback_bp = Blueprint("feedback", __name__, url_prefix="/api/feedback")
 
-FEEDBACK_FILE = "feedback_store.json"
+# ==========================================
+# Product-Specific Feedback Routes
+# ==========================================
 
-def load_feedback():
-    """Load all feedback from storage."""
-    if os.path.exists(FEEDBACK_FILE):
-        with open(FEEDBACK_FILE, 'r') as f:
-            return json.load(f)
-    return {"product_feedback": [], "general_feedback": []}
-
-def save_feedback(data):
-    """Save feedback to storage."""
-    with open(FEEDBACK_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
-
-# Product-specific feedback
 @feedback_bp.route('/product', methods=['POST'])
 def submit_product_feedback():
-    """Submit feedback for a specific product."""
+    """
+    Submit feedback for a specific product.
+    Validates input and stores the feedback in the Firebase Realtime Database.
+    """
     try:
         data = request.json
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        # Extract and validate required fields
+        product_id = data.get('product_id')
+        rating = data.get('rating')
+        comment = str(data.get('comment', '')).strip()
+        user_name = str(data.get('user_name', '')).strip()
+
+        if not product_id:
+            return jsonify({'success': False, 'error': 'product_id is required'}), 400
+        
+        # Ensure rating is between 1 and 5; default to 5 if invalid
+        try:
+            rating = int(rating)
+            rating = max(1, min(5, rating))
+        except (ValueError, TypeError):
+            rating = 5 
+
+        # Validate comment length constraints
+        if len(comment) < 3:
+            return jsonify({'success': False, 'error': 'Comment too short (min 3 chars)'}), 400
+        if len(comment) > 2000:
+            comment = comment[:2000] # Trim excessive input
+
+        # Assign default user name if missing
+        if not user_name:
+            user_name = "Anonymous"
+
+        # Construct feedback object
+        feedback_id = str(uuid.uuid4())
         feedback = {
-            "id": str(uuid.uuid4()),
-            "product_id": data.get('product_id'),
-            "rating": data.get('rating'),  # 1-5
-            "comment": data.get('comment'),
-            "user_name": data.get('user_name'),
+            "id": feedback_id,
+            "product_id": str(product_id),
+            "rating": rating,
+            "comment": comment,
+            "user_name": user_name,
             "timestamp": datetime.now().isoformat()
         }
         
-        all_feedback = load_feedback()
-        all_feedback["product_feedback"].append(feedback)
-        save_feedback(all_feedback)
+        # Save to Firebase Realtime Database using the dedicated API
+        success = FeedbackAPI.add_product_feedback(feedback_id, feedback)
         
-        return jsonify({'success': True, 'feedback_id': feedback['id']}), 201
+        if success:
+            return jsonify({'success': True, 'feedback_id': feedback_id}), 201
+        else:
+            return jsonify({'success': False, 'error': 'Failed to save feedback to database'}), 500
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
 @feedback_bp.route('/product/<product_id>', methods=['GET'])
 def get_product_feedback(product_id):
-    """Get all feedback for a specific product."""
+    """
+    Get all feedback associated with a specific product ID.
+    Calculates the average rating across all retrieved product feedback.
+    """
     try:
-        all_feedback = load_feedback()
-        product_feedback = [f for f in all_feedback["product_feedback"] 
-                          if f["product_id"] == product_id]
-        avg_rating = sum(f["rating"] for f in product_feedback) / len(product_feedback) if product_feedback else 0
+        # Retrieve all feedback for the product via Firebase
+        product_feedback = FeedbackAPI.get_product_feedback(product_id)
+        
+        if not product_feedback:
+            return jsonify({
+                'success': True,
+                'feedback': [],
+                'average_rating': 0,
+                'total_reviews': 0
+            })
+
+        # Calculate the average product rating
+        avg_rating = sum(int(f.get("rating", 0)) for f in product_feedback) / len(product_feedback)
         
         return jsonify({
             'success': True,
@@ -61,36 +98,60 @@ def get_product_feedback(product_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
-# General platform feedback
+# ==========================================
+# General Platform Feedback Routes
+# ==========================================
+
 @feedback_bp.route('/general', methods=['POST'])
 def submit_general_feedback():
-    """Submit general platform feedback."""
+    """
+    Submit general platform feedback, feature requests, or suggestions.
+    Stores the generalized feedback into Firebase Realtime Database.
+    """
     try:
         data = request.json
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        # Extract fields
+        msg = str(data.get('message', '')).strip()
+        f_type = str(data.get('type', 'suggestion')).lower()
+        email = str(data.get('user_email', '')).strip()
+
+        if not msg:
+            return jsonify({'success': False, 'error': 'Message is required'}), 400
+
+        # Construct general feedback object
+        feedback_id = str(uuid.uuid4())
         feedback = {
-            "id": str(uuid.uuid4()),
-            "type": data.get('type'),  # "bug", "feature", "suggestion"
-            "message": data.get('message'),
-            "user_email": data.get('user_email'),
+            "id": feedback_id,
+            "type": f_type,
+            "message": msg[:2000], # Cap message size 
+            "user_email": email,
             "timestamp": datetime.now().isoformat()
         }
         
-        all_feedback = load_feedback()
-        all_feedback["general_feedback"].append(feedback)
-        save_feedback(all_feedback)
+        # Save to Firebase Realtime Database
+        success = FeedbackAPI.add_general_feedback(feedback_id, feedback)
         
-        return jsonify({'success': True, 'feedback_id': feedback['id']}), 201
+        if success:
+            return jsonify({'success': True, 'feedback_id': feedback_id}), 201
+        else:
+            return jsonify({'success': False, 'error': 'Failed to save feedback to database'}), 500
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
 @feedback_bp.route('/general', methods=['GET'])
 def get_general_feedback():
-    """Get all general feedback."""
+    """
+    Retrieve all general platform feedback from the database.
+    """
     try:
-        all_feedback = load_feedback()
+        general_feedback = FeedbackAPI.get_general_feedback()
         return jsonify({
             'success': True,
-            'feedback': all_feedback["general_feedback"]
+            'feedback': general_feedback
         })
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 400
+        return jsonify({'success': False, 'error': str(e)}), 400

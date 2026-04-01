@@ -1,4 +1,4 @@
-# ♻️ ML Powered Scrap Trading Platform
+# ♻️ ML Powered Second-Hand Trading Platform
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue)
 ![React](https://img.shields.io/badge/React-18-blue)
@@ -6,26 +6,26 @@
 ![Firebase](https://img.shields.io/badge/Firebase-Auth-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-An intelligent full-stack web application that modernizes the scrap and second-hand goods trading ecosystem using **Machine Learning**, ensuring **fair pricing**, **fraud prevention**, and **trustworthy transactions** while promoting sustainability and the circular economy.
+An intelligent full-stack web application that modernizes the second-hand goods trading ecosystem using **Machine Learning**, ensuring **fair pricing**, **fraud prevention**, and **trustworthy transactions** while promoting sustainability and the circular economy.
 
 ---
 
 ## 🚀 Project Overview
 
-The **ML Powered Scrap Trading Platform** is designed to bridge the gap between buyers and sellers of scrap and second-hand items.  
+The **ML Powered Second-Hand Trading Platform** is designed to bridge the gap between buyers and sellers of second-hand items.  
 It leverages machine learning models to provide **price prediction**, **image-based product search**, **fake logo verification**, and **personalized recommendations**.
 
 This platform helps users:
 - Get **fair price suggestions**
 - Avoid **counterfeit products**
 - Find similar items using images
-- Trade scrap securely and efficiently
+- Trade second-hand items securely and efficiently
 
 ---
 
 ## 💡 Problem Statement
 
-Traditional scrap markets face:
+Traditional second-hand markets face:
 
 - ❌ Lack of price transparency  
 - ❌ No fraud detection mechanisms  
@@ -38,7 +38,7 @@ This platform solves these problems using intelligent ML pipelines and secure we
 
 ## 📊 Platform Comparison
 
-| Feature | Traditional Scrap Market | This Platform |
+| Feature | Traditional Second-Hand Market | This Platform |
 |----------|--------------------------|---------------|
 | Price Transparency | ❌ No | ✅ ML-Based Prediction |
 | Fraud Detection | ❌ None | ✅ Logo Verification |
@@ -53,7 +53,7 @@ This platform solves these problems using intelligent ML pipelines and secure we
 
 | Feature | Description |
 |---------|------------|
-| 🔍 Image-Based Product Search | Uses deep learning to find visually similar scrap items. |
+| 🔍 Image-Based Product Search | Uses deep learning to find visually similar second-hand items. |
 | 💰 Fair Price Prediction | ML model predicts an optimal price range based on category, condition, and market trends. |
 | 🛡️ Fake Logo Verification | CNN-based model detects counterfeit brand logos to prevent fraud. |
 | 🎯 Personalized Recommendations | Recommends relevant items using content-based filtering. |
@@ -88,16 +88,25 @@ Firebase Database & Storage
 
 ---
 
+
 ### 🤖 Machine Learning Modules
 
-| Module | Algorithm / Technique |
-|------|----------------------|
-| Image-Based Search | MobileNetV2 + Cosine Similarity |
-| Price Prediction | Random Forest Regressor |
-| Logo Verification | Convolutional Neural Network (CNN) |
-| Recommendations | TF-IDF + Cosine Similarity |
+| Module | Algorithm / Technique | Status |
+|------|----------------------|--------|
+| **Visual Search Engine** | **EfficientNetB0** + Cosine Similarity | ✅ High Accuracy |
+| **Smart Price Estimator** | **Random Forest Regressor** (Multi-feature) | ✅ High Accuracy |
+| **Authenticity Lab** | CNN + Feature Matching (LogoGuard AI) | ✅ Optimized |
+| **Recommendations** | TF-IDF + Cosine Similarity | 🛠️ In-Progress |
 
 ---
+
+## 🎨 Design & UX
+
+The platform features a **Premium Design System** built on:
+- **Glassmorphism Aesthetic**: Translucent layers with subtle blurs for a modern, futuristic feel.
+- **Dynamic Color Palettes**: Space-themed gradients (Indigo/Purple for Vision, Emerald/Teal for Finance).
+- **Interactive UI**: Micro-animations, responsive hover effects, and real-time validation feedback.
+- **Dark Mode Optimized**: Native support for high-contrast dark environments.
 
 ## 📂 Project Structure
 
@@ -218,10 +227,10 @@ escrow-v2   → Hardened Escrow Production Version
 
 | Initiative | Description |
 |------------|------------|
-| Responsible Recycling | Encourages proper disposal and reuse of scrap materials. |
+| Responsible Recycling | Encourages proper disposal and reuse of second-hand materials. |
 | Reduction of Waste | Minimizes landfill contribution through structured resale. |
 | Circular Economy Adoption | Promotes reuse and redistribution of materials within the economy. |
-| Digital Trust in Informal Scrap Markets | Builds transparency and credibility using ML-based verification systems. |
+| Digital Trust in Informal Second-Hand Markets | Builds transparency and credibility using ML-based verification systems. |
 
 ---
 

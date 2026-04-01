@@ -1,41 +1,31 @@
 """
-Configuration helpers for the fake logo verification service.
+High-accuracy configuration for the logo verification service.
 """
 
-import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parents[2]
 
-REFERENCE_LOGO_DIR = BASE_DIR / "reference_logos"
+# Point to the actual data directory
+DATASET_ROOT = PROJECT_ROOT / "data" / "raw" / "logo_detection"
+REFERENCE_LOGO_DIR = DATASET_ROOT / "Logos"
+LOGO_DB_CSV = DATASET_ROOT / "LogoDatabase.csv"
+
 FEATURE_DB_PATH = BASE_DIR / "reference_features.pkl"
 
-# Default thresholds for similarity scoring (ratio of good matches).
+# Optimized thresholds for SIFT + RANSAC + MobileNetV2
 BRAND_THRESHOLDS = {
-    "nike": 0.28,
-    "adidas": 0.30,
-    "puma": 0.26,
-    "apple": 0.32,
-    "samsung": 0.30,
+    "nike": 0.15,
+    "adidas": 0.12,
+    "puma": 0.14,
+    "apple": 0.18,
+    "samsung": 0.15,
 }
 
-DEFAULT_THRESHOLD = 0.70
-
-MAX_REFERENCE_IMAGES = 12
-MAX_KEYPOINTS = 500
-GOOD_MATCH_DISTANCE = 60
+DEFAULT_THRESHOLD = 0.55
 
 
 def get_brand_threshold(brand: str) -> float:
-    """Returns brand specific threshold."""
-    return BRAND_THRESHOLDS.get(brand.lower(), DEFAULT_THRESHOLD)
-
-
-def ensure_dirs() -> None:
-    """Ensures directories exist."""
-    REFERENCE_LOGO_DIR.mkdir(parents=True, exist_ok=True)
-    os.makedirs(BASE_DIR, exist_ok=True)
-
-
-ensure_dirs()
-
+    """Returns brand specific threshold if available; otherwise global default."""
+    return BRAND_THRESHOLDS.get(str(brand).lower(), 0.15)

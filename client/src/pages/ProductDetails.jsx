@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { getProduct, getProductRecommendations, initializeEscrow } from "../services/api";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { formatPrice } from "../utils/formatPrice";
-import FeedbackForm from "../components/listings/FeedbackForm";
-import FeedbackList from "../components/listings/FeedbackList";
+import FeedbackForm from "../components/feedback/FeedbackForm";
+import FeedbackList from "../components/feedback/FeedbackList";
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -87,7 +87,7 @@ const ProductDetails = () => {
   const handleShare = async () => {
     const shareData = {
       title: product.title,
-      text: `Check out this ${product.title} on Scrap Trading Platform!`,
+      text: `Check out this ${product.title} on TradeSmart Platform!`,
       url: window.location.href,
     };
 

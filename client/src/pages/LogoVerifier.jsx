@@ -1,5 +1,5 @@
 import React from "react";
-import LogoVerifier from "../components/listings/LogoVerifier";
+import LogoVerifier from "../components/ai_features/LogoVerifier";
 
 const LogoVerifierPage = () => {
   return (

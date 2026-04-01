@@ -1,5 +1,5 @@
 import React from "react";
-import ImageSearch from "../components/listings/ImageSearch";
+import ImageSearch from "../components/ai_features/ImageSearch";
 
 const ImageSearchPage = () => {
   return (

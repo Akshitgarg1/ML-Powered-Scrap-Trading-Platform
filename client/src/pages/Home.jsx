@@ -6,7 +6,7 @@ const features = [
     title: "AI Price Estimation",
     text: "Leverage advanced machine learning to get accurate market value for your pre-owned items instantly.",
     icon: (
-      <svg className="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
       </svg>
     ),
@@ -15,7 +15,7 @@ const features = [
     title: "Visual Search",
     text: "Find exactly what you're looking for by simply uploading a photo. Our AI identifies items with precision.",
     icon: (
-      <svg className="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
@@ -25,7 +25,7 @@ const features = [
     title: "Logo Verification",
     text: "Ensure brand authenticity with our neural network-based logo verification system for second-hand electronics.",
     icon: (
-      <svg className="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>
     ),
@@ -86,8 +86,8 @@ const Home = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Search for iPhones, MacBooks, Sony Cameras..."
-                  className="bg-transparent border-none focus:ring-0 w-full text-slate-900 dark:text-white px-4 py-3 placeholder-slate-400 font-medium text-base"
+                  placeholder={window.innerWidth < 768 ? "Search for items..." : "Search for iPhones, MacBooks, Sony Cameras..."}
+                  className="bg-transparent border-none focus:ring-0 w-full text-slate-900 dark:text-white px-4 py-3 placeholder-slate-500 font-medium text-sm md:text-base"
                 />
 
                 <div className="flex items-center gap-2 pr-2">
@@ -177,10 +177,10 @@ const Home = () => {
       </section>
 
       {/* Featured Categories Grid */}
-      <div className="mt-32">
-        <div className="flex flex-col items-center text-center mb-16">
-          <h2 className="section-heading text-3xl md:text-5xl">Shop by <span className="text-gradient">Category</span></h2>
-          <p className="section-subheading mt-4">Hand-picked premium assets across all departments.</p>
+      <div className="section-container !py-32">
+        <div className="flex flex-col items-center text-center mb-10 md:mb-16">
+          <h2 className="section-heading">Shop by <span className="text-gradient">Category</span></h2>
+          <p className="section-subheading mt-4 px-4">Hand-picked premium assets across all departments.</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
@@ -204,36 +204,38 @@ const Home = () => {
       </div>
 
       {/* Live Market Insights Ticker */}
-      <div className="mt-32 glass-panel !rounded-2xl overflow-hidden py-4 border-brand-500/10 bg-brand-500/5">
-        <div className="flex items-center gap-8 whitespace-nowrap animate-marquee px-4">
-          {[
-            { label: 'iPhone 15 Pro', price: '₹72,400', trend: '+2.4%' },
-            { label: 'MacBook M3', price: '₹1,24,900', trend: '-1.2%' },
-            { label: 'Sony A7 IV', price: '₹1,95,000', trend: '+0.8%' },
-            { label: 'Herman Miller', price: '₹84,000', trend: '+5.1%' },
-            { label: 'PS5 Slim', price: '₹44,500', trend: 'Stable' },
-            { label: 'DJI Mini 4', price: '₹68,200', trend: '-3.5%' },
-          ].map((item, idx) => (
-            <div key={idx} className="flex items-center gap-3">
-              <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">{item.label}</span>
-              <span className="text-slate-900 dark:text-white font-mono font-bold">{item.price}</span>
-              <span className={`text-[10px] font-bold ${item.trend.startsWith('+') ? 'text-emerald-500' : item.trend.startsWith('-') ? 'text-rose-500' : 'text-slate-500'}`}>
-                {item.trend}
-              </span>
-              <span className="text-slate-300 dark:text-slate-800 ml-4">|</span>
-            </div>
-          ))}
+      <div className="section-container !py-0 !mt-32">
+        <div className="glass-panel !rounded-2xl overflow-hidden py-4 border-brand-500/10 bg-brand-500/5">
+          <div className="flex items-center gap-8 whitespace-nowrap animate-marquee px-4">
+            {[
+              { label: 'iPhone 15 Pro', price: '₹72,400', trend: '+2.4%' },
+              { label: 'MacBook M3', price: '₹1,24,900', trend: '-1.2%' },
+              { label: 'Sony A7 IV', price: '₹1,95,000', trend: '+0.8%' },
+              { label: 'Herman Miller', price: '₹84,000', trend: '+5.1%' },
+              { label: 'PS5 Slim', price: '₹44,500', trend: 'Stable' },
+              { label: 'DJI Mini 4', price: '₹68,200', trend: '-3.5%' },
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-center gap-3">
+                <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">{item.label}</span>
+                <span className="text-slate-900 dark:text-white font-mono font-bold">{item.price}</span>
+                <span className={`text-[10px] font-bold ${item.trend.startsWith('+') ? 'text-emerald-500' : item.trend.startsWith('-') ? 'text-rose-500' : 'text-slate-500'}`}>
+                  {item.trend}
+                </span>
+                <span className="text-slate-400 dark:text-slate-700 ml-4">|</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Trending Deals Section - Aesthetic Product Focus */}
-      <div className="mt-40">
-        <div className="flex items-end justify-between mb-12">
-          <div className="space-y-4">
+      <div className="section-container !py-40">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div className="space-y-4 text-center md:text-left">
             <span className="text-brand-600 dark:text-brand-400 font-bold uppercase tracking-widest text-xs">Hand-picked for you</span>
-            <h2 className="section-heading !text-4xl text-left">Trending <span className="text-gradient">Resale Assets</span></h2>
+            <h2 className="section-heading !text-3xl md:!text-4xl text-left md:text-left">Trending <span className="text-gradient">Resale Assets</span></h2>
           </div>
-          <Link to="/browse" className="btn-secondary !py-2 !px-5 !rounded-xl !text-sm">View Marketplace</Link>
+          <Link to="/browse" className="btn-secondary !py-2.5 !px-6 !rounded-xl !text-xs md:!text-sm w-fit mx-auto md:mx-0">View Marketplace</Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -241,7 +243,7 @@ const Home = () => {
             { title: 'iPhone 14 Pro Max', price: '₹84,999', img: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&q=80&w=600', cat: 'Electronics' },
             { title: 'Sony WH-1000XM5', price: '₹18,500', img: 'https://images.unsplash.com/photo-1613040809024-b4ef7ba99bc3?auto=format&fit=crop&q=80&w=600', cat: 'Audio' },
             { title: 'Fujifilm X100V Gold', price: '₹1,45,000', img: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=600', cat: 'Cameras' },
-            { title: 'Herman Miller Sayl', price: '₹42,000', img: 'https://images.unsplash.com/photo-1616085222030-9b6267794348?auto=format&fit=crop&q=80&w=600', cat: 'Furniture' }
+            { title: 'Herman Miller Sayl', price: '₹42,000', img: 'https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&q=80&w=600', cat: 'Furniture' }
           ].map((product, idx) => (
             <div key={idx} className="group card-light !p-0 overflow-hidden cursor-pointer">
               <div className="aspect-[4/5] relative overflow-hidden bg-slate-100 dark:bg-slate-900">
@@ -267,9 +269,9 @@ const Home = () => {
       {/* How it Works Section */}
       <div className="mt-40 py-24 glass-panel !rounded-[3rem] border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5">
         <div className="section-container">
-          <div className="text-center mb-20">
-            <h2 className="section-heading text-4xl">Smooth & <span className="text-gradient">Secure</span></h2>
-            <p className="section-subheading mt-4">Simplified resale powered by modern intelligence.</p>
+          <div className="text-center mb-12 md:mb-20 px-4">
+            <h2 className="section-heading !text-3xl md:!text-4xl">Smooth & <span className="text-gradient">Secure</span></h2>
+            <p className="section-subheading mt-4 mx-auto">Simplified resale powered by modern intelligence.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-12 relative">
@@ -294,16 +296,16 @@ const Home = () => {
       </div>
 
       {/* AI Trust Section */}
-      <div className="mt-40">
+      <div className="section-container !py-40">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           <div className="lg:w-1/2">
             <div className="inline-block px-4 py-1.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-bold uppercase tracking-widest mb-6">
               Engineered for Trust
             </div>
-            <h2 className="section-heading text-4xl text-left leading-tight">
+            <h2 className="section-heading !text-3xl md:!text-4xl text-center md:text-left leading-tight">
               Verified with <span className="text-gradient">ML-Precision</span>
             </h2>
-            <p className="mt-6 text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
+            <p className="mt-6 text-slate-600 dark:text-slate-400 text-base md:text-lg leading-relaxed text-center md:text-left px-2 md:px-0">
               We don't just list products; we analyze them. Our proprietary AI tools perform visual verification and neural pricing analysis to ensure you get the best deal, every time.
             </p>
 
@@ -331,7 +333,7 @@ const Home = () => {
           <div className="lg:w-1/2 w-full">
             <div className="relative glass-panel !rounded-[3rem] p-4 aspect-square overflow-hidden group">
               <img
-                src="https://images.unsplash.com/photo-1517336715481-43b74043b355?auto=format&fit=crop&q=80&w=1000"
+                src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1000"
                 alt="AI Analysis Interface"
                 className="w-full h-full object-cover rounded-[2.5rem] group-hover:scale-105 transition-transform duration-1000"
               />
@@ -374,7 +376,7 @@ const Home = () => {
             <div className="lg:w-1/2 w-full">
               <div className="relative rounded-3xl overflow-hidden glass-panel aspect-square lg:aspect-video group">
                 <img
-                  src="https://images.unsplash.com/photo-1517373116369-9bdb8ca9f622?auto=format&fit=crop&q=80&w=1000"
+                  src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1000"
                   alt="AI Product Analysis"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
@@ -394,7 +396,7 @@ const Home = () => {
           <div className="grid gap-8 md:grid-cols-3">
             {features.map((feature) => (
               <div key={feature.title} className="card-light group hover:-translate-y-2">
-                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 dark:bg-brand-500/10 transition-colors group-hover:bg-brand-500 group-hover:text-white">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 dark:bg-brand-500/10 text-brand-500 transition-colors group-hover:bg-brand-500 group-hover:text-white shadow-sm duration-300">
                   <span className="transition-transform duration-500 group-hover:scale-110">
                     {feature.icon}
                   </span>

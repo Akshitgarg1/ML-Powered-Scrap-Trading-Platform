@@ -55,7 +55,7 @@ const Wishlist = () => {
                         Your Premium <span className="text-gradient">Watchlist</span>
                     </h1>
                     <p className="mt-4 mx-auto max-w-xl text-slate-500 dark:text-slate-400">
-                        Keep track of exclusive assets and high-value scrap opportunities
+                        Keep track of exclusive assets and high-value second-hand opportunities
                         before you initiate the secure escrow protocol.
                     </p>
                 </div>

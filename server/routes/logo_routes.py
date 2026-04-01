@@ -1,37 +1,41 @@
-"""Routes for fake logo verification service."""
+"""Routes for logo verification service."""
 
 import os
 import uuid
 from flask import Blueprint, jsonify, request, send_from_directory
+from pathlib import Path
 
 from ml_services.logo_verifier import get_available_brands, verify_logo
 
 logo_bp = Blueprint("logo", __name__, url_prefix="/api/logo")
 
+# Correct reference path based on new data structure
+BASE_DIR = Path(__file__).resolve().parent
+REFERENCE_LOGO_DIR = BASE_DIR.parents[1] / "data" / "raw" / "logo_detection" / "Logos"
+
 
 @logo_bp.route("/brands", methods=["GET"])
 def list_brands():
+    """Lists all brands currently in the reference database."""
     return jsonify({"success": True, "brands": get_available_brands()})
 
 
-@logo_bp.route("/reference/<brand>/<filename>", methods=["GET"])
-def serve_reference_logo(brand, filename):
-    base_dir = os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "ml_services",
-        "logo_verifier",
-        "reference_logos",
-        brand.lower(),
-    )
-    base_dir = os.path.abspath(base_dir)
-    if not os.path.exists(os.path.join(base_dir, filename)):
-        return jsonify({"success": False, "error": "Logo not found"}), 404
-    return send_from_directory(base_dir, filename)
+@logo_bp.route("/reference/<filename>", methods=["GET"])
+def serve_reference_logo(filename):
+    """Serves a reference logo image for display."""
+    if not REFERENCE_LOGO_DIR.exists():
+        return jsonify({"success": False, "error": "Reference directory not found"}), 404
+        
+    file_path = REFERENCE_LOGO_DIR / filename
+    if not file_path.exists():
+        return jsonify({"success": False, "error": f"Logo '{filename}' not found"}), 404
+        
+    return send_from_directory(str(REFERENCE_LOGO_DIR), filename)
 
 
 @logo_bp.route("/verify", methods=["POST"])
 def verify_logo_route():
+    """Verifies an uploaded logo against the reference database."""
     try:
         if "image" not in request.files:
             return jsonify({"success": False, "error": "Image is required"}), 400
@@ -54,8 +58,7 @@ def verify_logo_route():
         except OSError:
             pass
 
-        return jsonify(result), 200 if result.get("success") else 400
+        return jsonify(result), 200
 
     except Exception as exc:
         return jsonify({"success": False, "error": str(exc)}), 500
-
