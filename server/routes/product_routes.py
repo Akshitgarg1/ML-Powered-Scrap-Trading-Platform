@@ -9,7 +9,9 @@ import os
 import uuid
 from datetime import datetime
 from werkzeug.utils import secure_filename
+from firebase_admin import storage
 from utils.firebase_db import ProductsAPI
+from utils.auth_helper import token_required
 
 product_bp = Blueprint("product", __name__, url_prefix="/api/products")
 
@@ -89,15 +91,86 @@ def upload_image():
 
         filename = secure_filename(file.filename)
         unique_filename = f"{uuid.uuid4()}_{filename}"
-        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+        storage_url = None
 
-        file.save(filepath)
+        try:
+            bucket = storage.bucket()
+            blob_path = f"product_images/{unique_filename}"
+            blob = bucket.blob(blob_path)
+            file_data = file.read()
+            blob.upload_from_string(file_data, content_type=file.content_type)
+            blob.make_public()
+            storage_url = blob.public_url
+        except Exception as storage_error:
+            print(f"[WARNING] Firebase Storage upload failed: {storage_error}")
+            # Fallback to local uploads if storage upload fails.
+            filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+            file.seek(0)
+            file.save(filepath)
 
-        return jsonify({
+        response = {
             "success": True,
             "filename": unique_filename,
-            "filepath": f"/uploads/{unique_filename}"
-        }), 200
+        }
+
+        if storage_url:
+            response["url"] = storage_url
+            response["filepath"] = storage_url
+        else:
+            response["filepath"] = f"/uploads/{unique_filename}"
+
+        return jsonify(response), 200
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@product_bp.route("/upload-images", methods=["POST"])
+def upload_images():
+    """Upload multiple product images and return filenames."""
+    try:
+        if "images" not in request.files:
+            return jsonify({"success": False, "error": "No images provided"}), 400
+
+        files = request.files.getlist("images")
+        if not files or len(files) == 0:
+            return jsonify({"success": False, "error": "No files selected"}), 400
+
+        uploaded_urls = []
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+        for file in files:
+            if not file.filename:
+                continue
+
+            if not allowed_file(file.filename):
+                continue
+
+            filename = secure_filename(file.filename)
+            unique_filename = f"{uuid.uuid4()}_{filename}"
+            storage_url = None
+
+            try:
+                bucket = storage.bucket()
+                blob_path = f"product_images/{unique_filename}"
+                blob = bucket.blob(blob_path)
+                file_data = file.read()
+                blob.upload_from_string(file_data, content_type=file.content_type)
+                blob.make_public()
+                storage_url = blob.public_url
+            except Exception as storage_error:
+                print(f"[WARNING] Firebase Storage upload failed: {storage_error}")
+                # Fallback to local uploads if storage upload fails.
+                filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+                file.seek(0)
+                file.save(filepath)
+
+            if storage_url:
+                uploaded_urls.append(storage_url)
+            else:
+                uploaded_urls.append(f"/uploads/{unique_filename}")
+
+        return jsonify({"success": True, "urls": uploaded_urls}), 200
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -106,7 +179,8 @@ def upload_image():
 # ------------------------ CREATE LISTING ------------------------
 
 @product_bp.route("/listings", methods=["POST"])
-def create_listing():
+@token_required
+def create_listing(current_user):
     """Create a new product listing."""
     try:
         data = request.json
@@ -142,9 +216,9 @@ def create_listing():
             "brand": str(data.get("brand", "")).strip(),
             "condition": str(data.get("condition", "good")).lower(),
             "year": year,
-            "image_url": str(data.get("image_url", "")),
+            "image_urls": data.get("image_urls", []),
             "created_at": datetime.now().isoformat(),
-            "user_id": str(data.get("user_id", "demo_user"))
+            "user_id": current_user['uid']
         }
 
         product_id = str(uuid.uuid4())
@@ -190,6 +264,10 @@ def get_listings():
                 mx_p = float(max_price)
                 filtered = [p for p in filtered if float(p.get("price", 0)) <= mx_p]
             except: pass
+
+        seller_id = request.args.get("seller_id")
+        if seller_id:
+            filtered = [p for p in filtered if str(p.get("user_id", "")).lower() == str(seller_id).lower()]
 
         if search:
             search_term = search.lower()
@@ -263,6 +341,34 @@ def delete_listing(product_id):
         else:
             return jsonify({"success": False, "error": "Database deletion failed"}), 500
 
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+# ------------------------ GET MY LISTINGS (SELLER) ------------------------
+
+@product_bp.route("/my-listings", methods=["GET"])
+@token_required
+def get_my_listings(current_user):
+    """Get all products listed by the current authenticated user."""
+    try:
+        user_id = current_user.get("uid")
+        if not user_id:
+            return jsonify({"success": False, "error": "User not authenticated"}), 401
+        
+        products = ProductsAPI.get_all()
+        # Filter products where user_id matches the seller
+        my_products = [p for p in products if str(p.get("user_id", "")).lower() == str(user_id).lower()]
+        
+        # Sort by creation date descending (most recent first)
+        my_products.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+        
+        return jsonify({
+            "success": True,
+            "products": my_products,
+            "total": len(my_products)
+        }), 200
+        
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 

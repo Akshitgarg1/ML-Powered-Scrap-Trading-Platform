@@ -1,25 +1,25 @@
-# ♻️ ML Powered Second-Hand Trading Platform
+# ♻️ TradeSmart: AI-Powered B2B E-waste & Scrap Trading Platform
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![Flask](https://img.shields.io/badge/Flask-Backend-black)
-![Firebase](https://img.shields.io/badge/Firebase-Auth-orange)
+![Firebase](https://img.shields.io/badge/Firebase-Realtime_DB-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-An intelligent full-stack web application that modernizes the second-hand goods trading ecosystem using **Machine Learning**, ensuring **fair pricing**, **fraud prevention**, and **trustworthy transactions** while promoting sustainability and the circular economy.
+**TradeSmart** is an intelligent full-stack web application that modernizes the second-hand goods and scrap trading ecosystem. By seamlessly integrating **Machine Learning** natively inside core user workflows, TradeSmart ensures **fair pricing**, **fraud prevention**, and **trustworthy transactions** while promoting sustainability and the circular economy.
 
 ---
 
 ## 🚀 Project Overview
 
-The **ML Powered Second-Hand Trading Platform** is designed to bridge the gap between buyers and sellers of second-hand items.  
-It leverages machine learning models to provide **price prediction**, **image-based product search**, **fake logo verification**, and **personalized recommendations**.
+The **TradeSmart** platform bridges the gap between buyers and sellers of second-hand items and scrap materials.  
+Unlike traditional systems, machine learning features aren't isolated apps—they are organically integrated. It leverages these models directly during listings and product search to provide **price prediction**, **image-based product search**, **fake logo verification**, and **personalized recommendations**.
 
 This platform helps users:
-- Get **fair price suggestions**
-- Avoid **counterfeit products**
-- Find similar items using images
-- Trade second-hand items securely and efficiently
+- Get **fair price suggestions** automatically while listing items.
+- Avoid **counterfeit products** securely behind the scenes.
+- Find visually similar items natively within marketplace workflows.
+- Trade second-hand items efficiently with our state-of-the-art escrow process.
 
 ---
 
@@ -38,65 +38,52 @@ This platform solves these problems using intelligent ML pipelines and secure we
 
 ## 📊 Platform Comparison
 
-| Feature | Traditional Second-Hand Market | This Platform |
+| Feature | Traditional Second-Hand Market | TradeSmart |
 |----------|--------------------------|---------------|
 | Price Transparency | ❌ No | ✅ ML-Based Prediction |
-| Fraud Detection | ❌ None | ✅ Logo Verification |
-| Image Search | ❌ Not Available | ✅ Deep Learning |
+| Fraud Detection | ❌ None | ✅ Logo Verification Workflow |
+| Image Search | ❌ Not Available | ✅ Deep Learning Integrated Search |
 | Personalized Recommendations | ❌ No | ✅ Content-Based Filtering |
-| Secure Transactions | ❌ Informal | ✅ Production-Grade Escrow (Atomic + RBAC + Audit Trail) |
+| Secure Transactions | ❌ Informal | ✅ Production-Grade Escrow V2 |
 | Digital Identity | ❌ Unverified | ✅ Firebase Authentication |
 
 ---
 
-## 🧠 Key Features
+## 🧠 Integrated Machine Learning Modules
 
-| Feature | Description |
-|---------|------------|
-| 🔍 Image-Based Product Search | Uses deep learning to find visually similar second-hand items. |
-| 💰 Fair Price Prediction | ML model predicts an optimal price range based on category, condition, and market trends. |
-| 🛡️ Fake Logo Verification | CNN-based model detects counterfeit brand logos to prevent fraud. |
-| 🎯 Personalized Recommendations | Recommends relevant items using content-based filtering. |
-| 🔐 Secure Authentication | Firebase Authentication for user login and role management. |
-| 💬 Escrow V2 System | Atomic Firebase-based escrow with FSM state control, dispute lock, auto-refund & auto-release scheduler. |
+The platform's intelligence operates natively without separating users from core journeys:
+
+| Module | Algorithm / Technique | Status |
+|------|----------------------|--------|
+| **Visual Search Engine** | **EfficientNetB0** + Cosine Similarity | ✅ Integrated in Search |
+| **Smart Price Estimator** | **Random Forest Regressor** (Multi-feature) | ✅ Integrated in Listings |
+| **Authenticity Lab** | CNN + Feature Matching (LogoGuard AI) | ✅ Integrated Verification |
+| **Recommendations** | TF-IDF + Cosine Similarity | 🛠️ In-Progress |
 
 ---
 
 ## 🏗️ System Architecture
 
-```
-User (Frontend - React)
+```text
+User (Frontend - React + Modern Glassmorphism UI)
         ↓
 Flask REST API
         ↓
-ML Services Layer
+Centralized ML Services Layer
         ↓
-Firebase Database & Storage
+Firebase Realtime Database & Storage
 ```
 ---
 
 ## 🧰 Tech Stack
 
-
 | Layer | Technologies |
 |------|-------------|
 | **Frontend** | React.js, Tailwind CSS, JavaScript |
-| **Backend** | Flask (Python), REST APIs |
-| **Database** | Firebase Realtime Database |
+| **Backend** | Flask (Python), Centralized REST APIs |
+| **Database** | Firebase Realtime Database (Nodes for Wallets, Ratings, Scrap, Shipments, Watchlists) |
 | **Authentication** | Firebase Authentication |
 | **Storage** | Firebase Storage |
-
----
-
-
-### 🤖 Machine Learning Modules
-
-| Module | Algorithm / Technique | Status |
-|------|----------------------|--------|
-| **Visual Search Engine** | **EfficientNetB0** + Cosine Similarity | ✅ High Accuracy |
-| **Smart Price Estimator** | **Random Forest Regressor** (Multi-feature) | ✅ High Accuracy |
-| **Authenticity Lab** | CNN + Feature Matching (LogoGuard AI) | ✅ Optimized |
-| **Recommendations** | TF-IDF + Cosine Similarity | 🛠️ In-Progress |
 
 ---
 
@@ -111,7 +98,7 @@ The platform features a **Premium Design System** built on:
 ## 📂 Project Structure
 
 ```bash
-ML-Powered-Scrap-Trading-Platform/
+TradeSmart/
 │
 ├── client/ # Frontend (React + Tailwind)
 │ ├── src/
@@ -124,11 +111,12 @@ ML-Powered-Scrap-Trading-Platform/
 │ ├── ml_services/
 │ └── requirements.txt
 │
+├── data/ # Datasets & processing scripts
+├── scripts/ # Helper scripts
 ├── ml_models/ # Training scripts (no large models)
 │
-├── .gitignore
-├── README.md
-└── docker-compose.yml (optional)
+├── .gitignore (Secured config)
+└── README.md
 ```
 
 ---
@@ -140,6 +128,7 @@ ML-Powered-Scrap-Trading-Platform/
 git clone https://github.com/Akshitgarg1/ML-Powered-Scrap-Trading-Platform.git
 cd ML-Powered-Scrap-Trading-Platform
 ```
+
 ### 2️⃣ Frontend Setup
 ```text
 cd client
@@ -153,7 +142,9 @@ cd server
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
+python app.py
 ```
+
 ### 🔐 Firebase Admin Setup (Required for Escrow)
 
 - Generate Firebase Service Account Key
@@ -162,28 +153,8 @@ pip install -r requirements.txt
 server/serviceAccountKey.json
 ```
 - Update databaseURL in app.py
-- Run:
-```text
-python app.py
-```
-- ⚠️ serviceAccountKey.json is ignored via .gitignore.
-
----
-
-## 🔐 Environment Variables
-```text
-Create a .env file in both client and server folders for sensitive keys:
-
-FIREBASE_API_KEY=your_key_here
-FIREBASE_PROJECT_ID=your_project_id
-```
----
-
-## 📦 ML Models & Datasets
-
-- Large ML models are intentionally excluded.
-- Models are stored locally or in cloud storage.
-- Keeps repository lightweight and collaboration-friendly.
+- Run the flask app.
+- ⚠️ `serviceAccountKey.json` is safely ignored via `.gitignore` to prevent any secret leakages to GitHub.
 
 ---
 
@@ -191,36 +162,22 @@ FIREBASE_PROJECT_ID=your_project_id
 
 - Firebase role-based authentication
 - Protected API routes
-- Environment variable isolation
-- No sensitive keys in repository
+- **Strict Git policies**: Virtual environments, env variables, test data, and temp files are excluded via updated `.gitignore`.
+- No sensitive keys in branch history.
 
 ---
 
-## 🔒 Escrow V2 Architecture (escrow-v2 Branch)
+## 🔒 Escrow V2 Architecture
 
-- The escrow-v2 branch introduces a production-grade escrow system designed with:
+Our production-grade escrow system natively manages transaction lifecycles and physical fulfillment:
 
--- 🔁 Atomic Firebase Transactions
+- 🔁 **Atomic Firebase Transactions**
+- 🔐 **Role-Based Access Control** (Buyer / Seller / Admin / System)
+- 📊 **Multi-State Synchronization** (Escrow status, Payment status, Shipment tracking status)
+- ⏳ **Auto-Refund** (Shipping Timeout) & **Auto-Release** (Delivery Confirmation Timeout)
+- 🛡️ **Admin Dispute Lock Mechanism**
+- 📜 **Immutable Audit Trail** (Tracking via AI & User nodes)
 
--- 🔐 Role-Based Access Control (Buyer / Seller / Admin / System)
-
--- 📊 Multi-State Synchronization (escrow_status, payment_status, shipment_status)
-
--- ⏳ Auto-Refund (Shipping Timeout)
-
--- ⏳ Auto-Release (Delivery Confirmation Timeout)
-
--- 🛡️ Admin Lock Mechanism
-
--- 📜 Immutable Audit Trail
-
-- All fund transitions are validated through a strict Finite State Machine (FSM).
-
-- Branch Info:
-```bash
-main        → Base Stable Version
-escrow-v2   → Hardened Escrow Production Version
-```
 ---
 
 ## 🌱 Sustainability Impact
@@ -230,17 +187,7 @@ escrow-v2   → Hardened Escrow Production Version
 | Responsible Recycling | Encourages proper disposal and reuse of second-hand materials. |
 | Reduction of Waste | Minimizes landfill contribution through structured resale. |
 | Circular Economy Adoption | Promotes reuse and redistribution of materials within the economy. |
-| Digital Trust in Informal Second-Hand Markets | Builds transparency and credibility using ML-based verification systems. |
-
----
-
-## 📈 Future Enhancements
-
-- Real-time dynamic pricing
-- Mobile application (React Native)
-- Blockchain-based transaction verification
-- Multilingual support
-- Advanced recommender system (Hybrid Model)
+| Digital Trust | Builds transparency and credibility natively using ML-based verification systems. |
 
 ---
 
@@ -254,18 +201,12 @@ escrow-v2   → Hardened Escrow Production Version
 
 ---
 
-## 📄 License
+## 📄 License & Author
 
 This project is licensed under the MIT License.
-
----
-
-## 👨‍💻 Author
 
 **Akshit Garg**  
 B.Tech CSE | Final Year  
 Machine Learning & Full-Stack Enthusiast  
-
----
 
 ⭐ If you found this project useful, consider giving it a star!

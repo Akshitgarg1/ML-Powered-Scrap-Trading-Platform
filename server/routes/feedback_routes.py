@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 import uuid
-from utils.firebase_db import FeedbackAPI
+from utils.firebase_db import FeedbackAPI, ProductsAPI
 
 feedback_bp = Blueprint("feedback", __name__, url_prefix="/api/feedback")
 
@@ -42,15 +42,34 @@ def submit_product_feedback():
         if len(comment) > 2000:
             comment = comment[:2000] # Trim excessive input
 
+        # Require a logged-in user to submit feedback so review ownership can be enforced
+        reviewer_id = str(data.get('user_id', '')).strip()
+        if not reviewer_id:
+            return jsonify({'success': False, 'error': 'user_id is required to submit feedback'}), 401
+
         # Assign default user name if missing
         if not user_name:
             user_name = "Anonymous"
+
+        # Ensure product exists and prevent the uploader from reviewing their own listing
+        product = ProductsAPI.get_by_id(product_id)
+        if not product:
+            return jsonify({'success': False, 'error': 'Product not found'}), 404
+
+        if reviewer_id == str(product.get('user_id', '')) or reviewer_id == str(product.get('seller_id', '')):
+            return jsonify({'success': False, 'error': 'You cannot review your own product'}), 403
+
+        # Prevent duplicate submissions from the same user for the same product
+        existing_feedback = FeedbackAPI.get_product_feedback(product_id)
+        if any(str(f.get('user_id', '')) == reviewer_id for f in existing_feedback):
+            return jsonify({'success': False, 'error': 'You have already submitted feedback for this product'}), 400
 
         # Construct feedback object
         feedback_id = str(uuid.uuid4())
         feedback = {
             "id": feedback_id,
             "product_id": str(product_id),
+            "user_id": reviewer_id,
             "rating": rating,
             "comment": comment,
             "user_name": user_name,
@@ -65,6 +84,32 @@ def submit_product_feedback():
         else:
             return jsonify({'success': False, 'error': 'Failed to save feedback to database'}), 500
 
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@feedback_bp.route('/product/<feedback_id>', methods=['DELETE'])
+def delete_product_feedback(feedback_id):
+    """Delete product feedback if requested by the same reviewer."""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        user_id = str(data.get('user_id', '')).strip()
+        if not user_id:
+            return jsonify({'success': False, 'error': 'user_id is required'}), 401
+
+        feedback = FeedbackAPI.get_product_feedback_by_id(feedback_id)
+        if not feedback:
+            return jsonify({'success': False, 'error': 'Feedback not found'}), 404
+
+        if str(feedback.get('user_id', '')) != user_id:
+            return jsonify({'success': False, 'error': 'You can only delete your own feedback'}), 403
+
+        success = FeedbackAPI.delete_product_feedback(feedback_id)
+        if success:
+            return jsonify({'success': True}), 200
+        return jsonify({'success': False, 'error': 'Failed to delete feedback'}), 500
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
@@ -154,4 +199,4 @@ def get_general_feedback():
             'feedback': general_feedback
         })
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 400
+        return jsonify({'success': False, 'error': str(e)}), 400

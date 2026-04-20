@@ -145,7 +145,19 @@ class ProductsAPI:
     def get_all():
         """Get all products"""
         products = FirebaseDB.get_all('products')
-        return list(products.values()) if products else []
+        if not products:
+            return []
+
+        results = []
+        for product_id, product_data in products.items():
+            if isinstance(product_data, dict):
+                item = product_data.copy()
+                item['id'] = product_id
+            else:
+                item = {'id': product_id, 'value': product_data}
+            results.append(item)
+
+        return results
     
     @staticmethod
     def get_by_id(product_id: str):

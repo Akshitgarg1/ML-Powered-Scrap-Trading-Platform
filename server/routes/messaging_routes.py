@@ -135,6 +135,28 @@ def send_message(thread_id):
     
     success = MessagesAPI.add_message(thread_id, msg_id, message)
     if success:
+        try:
+            receiver_id = thread.get("seller_id") if data["sender_id"] == thread.get("buyer_id") else thread.get("buyer_id")
+            import time
+            notification_id = f"notif_{str(uuid.uuid4())[:12]}"
+            notif = {
+                "notification_id": notification_id,
+                "user_id": receiver_id,
+                "type": "MESSAGE",
+                "title": "New Message",
+                "message": f"You have a new message: {data['content'][:50]}",
+                "read": False,
+                "created_at": int(time.time()),
+                "related_escrow_id": thread.get("escrow_id"),
+                "related_product_id": thread.get("product_id"),
+                "related_user_id": data["sender_id"],
+                "action_required": False
+            }
+            db.reference(f'notifications/{receiver_id}/{notification_id}').set(notif)
+            print(f"🔥 [DEBUG] Notification created: {notification_id} for user mode '{receiver_id}'")
+        except Exception as e:
+            print(f"[WARNING] Failed to generate message notification: {str(e)}")
+            
         return jsonify({"success": True, "message": message}), 201
     return jsonify({"success": False, "error": "Failed to add message"}), 500
 

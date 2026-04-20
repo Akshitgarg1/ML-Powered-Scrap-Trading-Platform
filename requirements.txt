@@ -61,3 +61,4 @@ protobuf==5.29.5
 firebase-admin==7.2.0
 bcrypt==5.0.0
 PyJWT==2.11.0
+stripe==15.0.1

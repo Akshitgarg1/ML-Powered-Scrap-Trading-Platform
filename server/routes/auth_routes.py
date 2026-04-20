@@ -14,6 +14,7 @@ import jwt
 import datetime
 import bcrypt
 import uuid
+import re
 
 from firebase_admin import db
 from utils.auth_helper import token_required
@@ -30,9 +31,24 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 # Helper Functions
 # =====================================================
 
+EMAIL_REGEX = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
+PHONE_REGEX = re.compile(r"^[6-9][0-9]{9}$")
+
+
 def normalize_input(value):
     """Normalize user input for consistent comparison."""
     return value.lower().strip()
+
+
+def is_valid_email(email):
+    """Validate email format."""
+    return bool(EMAIL_REGEX.match(email.strip()))
+
+
+def is_valid_phone(phone):
+    """Validate Indian 10-digit mobile number."""
+    trimmed = phone.strip()
+    return bool(trimmed and PHONE_REGEX.match(trimmed))
 
 
 def user_exists(username, email):
@@ -94,14 +110,34 @@ def register():
             "message": "Required fields missing!"
         }), 400
 
+    email = email.strip()
+    phone = phone.strip()
     username_clean = normalize_input(username)
     email_clean = normalize_input(email)
+
+    if not is_valid_email(email):
+        return jsonify({
+            "success": False,
+            "message": "Enter a valid email address."
+        }), 400
+
+    if len(password) < 6:
+        return jsonify({
+            "success": False,
+            "message": "Password must be at least 6 characters."
+        }), 400
+
+    if phone and not is_valid_phone(phone):
+        return jsonify({
+            "success": False,
+            "message": "Enter a valid 10-digit Indian phone number."
+        }), 400
 
     # Check existing user
     if user_exists(username_clean, email_clean):
         return jsonify({
             "success": False,
-            "message": "Username or Email already registered!"
+            "message": "Username or email already registered!"
         }), 409
 
     # Password hashing
@@ -204,6 +240,20 @@ def get_profile(current_user):
         "success": True,
         "profile": profile
     }), 200
+
+
+@auth_bp.route("/user/<user_id>", methods=["GET"])
+def get_user_by_id(user_id):
+    """Return public user profile by user ID."""
+    user_data = db.reference(f"users/{user_id}").get()
+    if not user_data:
+        return jsonify({"success": False, "error": "User not found"}), 404
+
+    public_user = user_data.copy()
+    public_user.pop("password", None)
+    public_user["uid"] = user_id
+
+    return jsonify({"success": True, "user": public_user}), 200
 
 
 @auth_bp.route("/profile", methods=["PUT"])

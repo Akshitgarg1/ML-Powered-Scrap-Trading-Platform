@@ -1,0 +1,34 @@
+{
+  "rules": {
+    "users": {
+        "$uid": {
+            // Only the specific user can read and write their own data
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid"
+        }
+    },
+    "products": {
+        // Anyone can read products (for browsing listings)
+        ".read": "true",
+        "$product_id": {
+             // New products can be created by authenticated users.
+             // Products can only be modified or deleted by their owner.
+             ".write": "auth != null && (!data.exists() || data.child('owner_id').val() === auth.uid)"
+        }
+    },
+    "watchlists": {
+        "$uid": {
+            // Only the owner can view and modify their wishlist
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid"
+        }
+    },
+    // Adding reasonable defaults for other routes
+    "categories": {
+        ".read": "true",
+        ".write": "false" // Admin only
+    },
+    ".read": "false",
+    ".write": "false"
+  }
+}
