@@ -4,6 +4,7 @@ import numpy as np
 import random
 from datetime import datetime, timedelta
 import os
+from pathlib import Path
 
 
 
@@ -110,8 +111,12 @@ def generate_sample_data(n_samples=5000):
         products.append(product)
     
     df = pd.DataFrame(products)
-    os.makedirs('data/raw', exist_ok=True)
-    df.to_csv('data/raw/product_data.csv', index=False)
+    script_dir = Path(__file__).resolve().parent
+    output_dir = script_dir.parents[1] / 'data' / 'raw' / 'price_prediction'
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / 'product_data.csv'
+    df.to_csv(output_path, index=False)
+    print(f"✅ Generated {n_samples} products and saved to {output_path}")
     
     print(f"✅ Generated {n_samples} high-quality sample products")
     return df

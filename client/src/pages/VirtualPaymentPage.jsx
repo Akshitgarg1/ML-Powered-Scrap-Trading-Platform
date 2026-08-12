@@ -11,6 +11,7 @@ import {
 	confirmPaymentIntent,
 	createPaymentIntent,
 	getEscrowDetails,
+	simulatePayment,
 } from "../services/api";
 import { formatPrice } from "../utils/formatPrice";
 
@@ -249,6 +250,28 @@ const StripePaymentPage = () => {
 		}
 	};
 
+	const handleSimulatePayment = async () => {
+		setPreparingIntent(true);
+		setCheckoutError(null);
+
+		try {
+			const res = await simulatePayment({ escrow_id: escrowId });
+			if (res.success) {
+				setSuccess(true);
+				setStep(3);
+				setTimeout(() => {
+					navigate(`/escrow/${escrowId}`);
+				}, 2000);
+			} else {
+				setCheckoutError(res.error || "Simulation failed.");
+			}
+		} catch (err) {
+			setCheckoutError(err.message || "Simulation failed.");
+		} finally {
+			setPreparingIntent(false);
+		}
+	};
+
 	const handlePaymentSuccess = async (paymentIntent) => {
 		if (!paymentIntent?.id) {
 			setCheckoutError("Payment succeeded but payment intent id is missing.");
@@ -468,9 +491,24 @@ const StripePaymentPage = () => {
 
 									{checkoutError && (
 										<div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
-											<p className="text-sm text-red-800 dark:text-red-300">
+											<p className="text-sm text-red-800 dark:text-red-300 font-medium">
 												{checkoutError}
 											</p>
+											{checkoutError.includes("STRIPE_SECRET_KEY") && (
+												<div className="mt-4 border-t border-red-200 pt-4 dark:border-red-500/20">
+													<p className="text-xs text-red-700 dark:text-red-400 mb-3">
+														💡 Running in local development? You can bypass Stripe and simulate a successful payment instantly.
+													</p>
+													<button
+														type="button"
+														onClick={handleSimulatePayment}
+														disabled={preparingIntent}
+														className="w-full rounded-lg bg-emerald-600 py-2.5 font-bold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50 text-sm shadow-md"
+													>
+														{preparingIntent ? "Processing Simulation..." : "Simulate Payment (Dev Mode)"}
+													</button>
+												</div>
+											)}
 										</div>
 									)}
 

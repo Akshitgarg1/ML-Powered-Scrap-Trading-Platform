@@ -238,7 +238,8 @@ const ProductDetails = () => {
 	const getImageUrl = (url) => {
 		if (!url) return null;
 		if (url.startsWith("http")) return url;
-		if (url.startsWith("/uploads/")) return `http://localhost:5050${url}`;
+		const backendUrl = import.meta.env.VITE_API_BACKEND_URL || "http://localhost:5050";
+if (url.startsWith("/uploads/")) return `${backendUrl}${url}`;
 		return null;
 	};
 

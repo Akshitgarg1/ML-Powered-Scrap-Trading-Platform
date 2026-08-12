@@ -3,7 +3,7 @@
 import axios from "axios";
 
 const api = axios.create({
-	baseURL: "http://localhost:5050/api",
+	baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5050/api",
 	headers: { "Content-Type": "application/json" },
 	timeout: 60000,
 });
@@ -292,6 +292,11 @@ export const createPaymentIntent = async (data) => {
 
 export const confirmPaymentIntent = async (data) => {
 	const res = await api.post("/payment/confirm-payment-intent", data);
+	return res.data;
+};
+
+export const simulatePayment = async (data) => {
+	const res = await api.post("/payment/simulate-payment", data);
 	return res.data;
 };
 

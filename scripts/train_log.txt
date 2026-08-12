@@ -1,0 +1,12 @@
+Starting training...
+Loaded 5000 rows from C:\Users\Akshit\Desktop\ml scraptrade\code\data\raw\price_prediction\product_data.csv
+Training Price Prediction Model...
+----------------------------------------
+📊 MODEL EVALUATION REPORT
+MAE  (Mean Absolute Error): ₹1969.49
+RMSE (Root Mean Squared Error): ₹3037.07
+R² Score: 0.9861
+----------------------------------------
+ Metrics saved to C:\Users\Akshit\Desktop\ml scraptrade\code\server\ml_services\price_predictor\metrics.json
+🚀 Model saved to C:\Users\Akshit\Desktop\ml scraptrade\code\server\ml_models\price_model.joblib
+Training completed successfully.

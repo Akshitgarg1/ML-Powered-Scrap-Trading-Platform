@@ -97,15 +97,27 @@ def create_app():
         if not firebase_admin._apps:
             db_url = os.getenv('DATABASE_URL')
             storage_bucket = os.getenv('FIREBASE_STORAGE_BUCKET', 'scrap-trade-b1ea7.appspot.com')
-            cred_path = os.path.join(os.path.dirname(__file__), os.getenv('FIREBASE_CREDENTIALS_PATH', 'serviceAccountKey.json'))
-            if os.path.exists(cred_path):
-                cred = credentials.Certificate(cred_path)
+            
+            # Check for JSON string first (highly recommended for production env vars)
+            cred_json = os.getenv('FIREBASE_CREDENTIALS_JSON')
+            if cred_json:
+                import json
+                cred_info = json.loads(cred_json)
+                cred = credentials.Certificate(cred_info)
                 firebase_admin.initialize_app(cred, {'databaseURL': db_url, 'storageBucket': storage_bucket})
+                print("[INFO] Firebase initialized using FIREBASE_CREDENTIALS_JSON.")
             else:
-                firebase_admin.initialize_app(options={'databaseURL': db_url, 'storageBucket': storage_bucket})
-            print(f"[INFO] Firebase initialized with: {db_url} and storage bucket {storage_bucket}")
+                cred_path = os.path.join(os.path.dirname(__file__), os.getenv('FIREBASE_CREDENTIALS_PATH', 'serviceAccountKey.json'))
+                if os.path.exists(cred_path):
+                    cred = credentials.Certificate(cred_path)
+                    firebase_admin.initialize_app(cred, {'databaseURL': db_url, 'storageBucket': storage_bucket})
+                    print(f"[INFO] Firebase initialized using serviceAccountKey.json from path: {cred_path}")
+                else:
+                    firebase_admin.initialize_app(options={'databaseURL': db_url, 'storageBucket': storage_bucket})
+                    print("[INFO] Firebase initialized using default options.")
     except Exception as e:
         print(f"[WARNING] Firebase init warning: {e}")
+
 
     # Allow API access from frontend and permit authorization headers
     CORS(

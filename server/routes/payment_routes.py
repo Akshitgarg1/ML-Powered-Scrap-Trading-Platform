@@ -542,3 +542,64 @@ def get_wallet(user_id):
         return jsonify({"success": True, "wallet": wallet}), 200
     except Exception as exc:
         return jsonify({"success": False, "error": str(exc)}), 500
+
+
+@payment_bp.route("/simulate-payment", methods=["POST"])
+@token_required
+def simulate_payment(current_user):
+    """Bypass Stripe and mark the escrow as paid (simulated dev mode)."""
+    try:
+        data = request.get_json(silent=True) or {}
+        escrow_id = str(data.get("escrow_id", "")).strip()
+
+        if not escrow_id:
+            return jsonify({"success": False, "error": "escrow_id is required."}), 400
+
+        escrow_ref = db.reference(f"escrows/{escrow_id}")
+        escrow = escrow_ref.get()
+        if not escrow:
+            return jsonify({"success": False, "error": "Escrow not found."}), 404
+
+        buyer_id = str(escrow.get("buyer_id", ""))
+        if buyer_id not in _resolve_identity_keys(current_user.get("uid")):
+            return jsonify({"success": False, "error": "Unauthorized user."}), 403
+
+        current_payment_status = str(escrow.get("status_matrix", {}).get("payment_status", "")).upper()
+        if current_payment_status == "PAID":
+            return jsonify({
+                "success": True,
+                "escrow_id": escrow_id,
+                "payment_status": "PAID",
+                "escrow_status": "FUNDED",
+                "alreadyPaid": True,
+            })
+
+        amount = _resolve_amount(escrow)
+        currency = _resolve_currency(escrow)
+
+        class MockPaymentIntent:
+            def __init__(self, pi_id, amt, curr):
+                self.id = pi_id
+                self.amount_received = int(round(amt * 100))
+                self.amount = int(round(amt * 100))
+                self.currency = curr
+                self.status = "succeeded"
+                self.latest_charge = f"ch_mock_{uuid.uuid4().hex[:10]}"
+
+        mock_intent_id = f"pi_mock_{uuid.uuid4().hex[:12]}"
+        mock_intent = MockPaymentIntent(mock_intent_id, amount, currency)
+
+        settled, err = _settle_successful_payment(escrow_id, mock_intent, "DEV_SIMULATION")
+        if not settled:
+            return jsonify({"success": False, "error": err or "Failed to settle simulated payment."}), 500
+
+        return jsonify({
+            "success": True,
+            "escrow_id": escrow_id,
+            "payment_intent_id": mock_intent_id,
+            "payment_status": "PAID",
+            "escrow_status": "FUNDED",
+            "simulated": True,
+        })
+    except Exception as exc:
+        return jsonify({"success": False, "error": str(exc)}), 500

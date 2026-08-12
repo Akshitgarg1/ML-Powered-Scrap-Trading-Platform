@@ -4,10 +4,15 @@ import json
 import os
 from pathlib import Path
 
+# Setup paths relative to script location
+BASE_DIR = Path(__file__).resolve().parents[2]
+PORT = os.getenv("PORT", "5050")
+API_URL = f"http://127.0.0.1:{PORT}"
+
 def test_price_dataset():
     print("\n--- Testing Price Prediction Dataset ---")
-    csv_path = r'data\raw\price_prediction\product_data.csv'
-    if not os.path.exists(csv_path):
+    csv_path = BASE_DIR / 'data' / 'raw' / 'price_prediction' / 'product_data.csv'
+    if not csv_path.exists():
         print(f"[ERROR] CSV not found at {csv_path}")
         return
 
@@ -27,7 +32,7 @@ def test_price_dataset():
     print(f"Testing with Brand: {payload['brand']}, Orig Price: {payload['original_price']}")
     
     try:
-        response = requests.post("http://127.0.0.1:5000/api/ai/predict-price", json=payload)
+        response = requests.post(f"{API_URL}/api/ai/predict-price", json=payload)
         print(f"API Response: {json.dumps(response.json(), indent=2)}")
     except Exception as e:
         print(f"Connection Error: {e}")
@@ -36,16 +41,15 @@ def test_fashion_dataset():
     print("\n--- Testing Fashion Search (Metadata) ---")
     # This checks if the local index was built correctly from the CSV
     try:
-        response = requests.get("http://127.0.0.1:5000/api/image/health")
+        response = requests.get(f"{API_URL}/api/image/health")
         print(f"Visual Search Service: {response.json().get('status')}")
     except Exception as e:
         print(f"Connection Error: {e}")
 
 def test_logo_dataset():
     print("\n--- Testing Logo Dataset Integration ---")
-    logo_dir = r'data\raw\logo_detection\Logos'
     try:
-        response = requests.get("http://127.0.0.1:5000/api/logo/brands")
+        response = requests.get(f"{API_URL}/api/logo/brands")
         brands = response.json().get('brands', [])
         print(f"Successfully loaded {len(brands)} brands from LogoDatabase.csv")
         print(f"Sample brands available: {brands[:5]}")
@@ -57,3 +61,4 @@ if __name__ == "__main__":
     test_price_dataset()
     test_fashion_dataset()
     test_logo_dataset()
+

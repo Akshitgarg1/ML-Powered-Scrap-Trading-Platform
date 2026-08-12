@@ -87,38 +87,42 @@ def remove_parts(img):
         draw.rectangle([x1, y1, x2, y2], fill=(255, 255, 255, 255))
     return img
 
+from pathlib import Path
+
 def generate_fake_logos_dataset():
     """Generate fake logos for all brands"""
     
-    base_dir = 'data/logo_dataset/classification'
+    script_dir = Path(__file__).resolve().parent
+    base_dir = script_dir.parents[1] / 'data' / 'logo_dataset' / 'classification'
     
-    if not os.path.exists(base_dir):
-        print("❌ Classification dataset not found! Run setup script first.")
+    if not base_dir.exists():
+        print(f"❌ Classification dataset not found at {base_dir}! Run setup script first.")
         return
     
     total_fakes = 0
     
     for brand in os.listdir(base_dir):
-        brand_dir = os.path.join(base_dir, brand)
-        genuine_dir = os.path.join(brand_dir, 'genuine')
-        fake_dir = os.path.join(brand_dir, 'fake')
+        brand_dir = base_dir / brand
+        genuine_dir = brand_dir / 'genuine'
+        fake_dir = brand_dir / 'fake'
         
-        if not os.path.exists(genuine_dir):
+        if not genuine_dir.exists():
+
             print(f"⚠️  No genuine logos found for {brand}")
             continue
         
-        genuine_logos = [f for f in os.listdir(genuine_dir) if f.endswith('.png')]
+        genuine_logos = [f for f in os.listdir(genuine_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
         
         if not genuine_logos:
-            print(f"⚠️  No PNG files in {genuine_dir}")
+            print(f"⚠️  No images in {genuine_dir}")
             continue
         
         print(f"\n🏷️  Generating fake logos for: {brand.upper()}")
         
         brand_fakes = 0
         for genuine_logo in genuine_logos[:2]:  # Use first 2 genuine logos as base
-            genuine_path = os.path.join(genuine_dir, genuine_logo)
-            created = apply_logo_distortions(genuine_path, fake_dir, brand)
+            genuine_path = genuine_dir / genuine_logo
+            created = apply_logo_distortions(str(genuine_path), str(fake_dir), brand)
             brand_fakes += created
         
         print(f"   ✅ Created {brand_fakes} fake variations")

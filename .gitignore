@@ -70,10 +70,15 @@ Logs
 *.onnx
 
 # Data directories
-# data/
+data/
 Dataset/
 archive/
 uploads/
+
+# Explicitly allow committing the trained models for production deployment
+!server/ml_models/price_model.joblib
+!server/ml_models/logo_auth_classifier.pkl
+
 
 # ==========================================
 # # 5. OS & IDE Specific

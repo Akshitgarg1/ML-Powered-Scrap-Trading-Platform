@@ -11,8 +11,9 @@ from typing import List
 
 from PIL import Image, ImageDraw, ImageFont
 
-WORKSPACE_ROOT = Path(__file__).resolve().parents[1]
+WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
 REFERENCE_DIR = WORKSPACE_ROOT / "server" / "ml_services" / "logo_verifier" / "reference_logos"
+
 
 BRAND_STYLES = {
     "nike": {
