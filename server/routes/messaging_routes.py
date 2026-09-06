@@ -1,15 +1,18 @@
-"""In-app messaging routes with escrow integration, backed by Firebase RTDB."""
+"""In-app messaging routes backed by Firebase RTDB."""
 
 import uuid
 from datetime import datetime
-from flask import Blueprint, jsonify, request
+from typing import Any, Dict, Optional
+from fastapi import APIRouter, Body, Query
+from fastapi.responses import JSONResponse
 from firebase_admin import db
 from utils.firebase_db import MessagesAPI, ProductsAPI
 
-messaging_bp = Blueprint("messaging", __name__, url_prefix="/api/messaging")
+messaging_router = APIRouter(prefix="/api/messaging", tags=["messaging"])
+messaging_bp = messaging_router  # Alias for backward compatibility
 
 
-def get_or_create_thread(product_id, buyer_id, seller_id):
+def get_or_create_thread(product_id: str, buyer_id: str, seller_id: str):
     """Get existing thread or create new one for buyer-seller conversation."""
     thread_id = f"{product_id}_{buyer_id}_{seller_id}"
     
@@ -26,19 +29,17 @@ def get_or_create_thread(product_id, buyer_id, seller_id):
         "updated_at": datetime.utcnow().isoformat(),
         "messages": {},
         "status": "active",  # active, sold, closed
-        "escrow_id": None,
     }
     
     MessagesAPI.create_thread(thread_id, new_thread)
     return new_thread
 
 
-@messaging_bp.route("/threads", methods=["GET"])
-def list_threads():
+@messaging_router.get("/threads")
+async def list_threads(user_id: Optional[str] = Query(None)):
     """Get all message threads for a user (buyer or seller)."""
-    user_id = request.args.get("user_id")
     if not user_id:
-        return jsonify({"success": False, "error": "user_id required"}), 400
+        return JSONResponse(status_code=400, content={"success": False, "error": "user_id required"})
     
     user_threads = MessagesAPI.get_user_threads(user_id)
     
@@ -67,33 +68,33 @@ def list_threads():
         reverse=True
     )
     
-    return jsonify({"success": True, "threads": user_threads}), 200
+    return JSONResponse(status_code=200, content={"success": True, "threads": user_threads})
 
 
-@messaging_bp.route("/thread/<thread_id>", methods=["GET"])
-def get_thread(thread_id):
+@messaging_router.get("/thread/{thread_id}")
+async def get_thread(thread_id: str):
     """Get a specific message thread with all messages."""
     thread = MessagesAPI.get_thread(thread_id)
     
     if not thread:
-        return jsonify({"success": False, "error": "Thread not found"}), 404
+        return JSONResponse(status_code=404, content={"success": False, "error": "Thread not found"})
         
     messages = thread.get("messages", {})
     if isinstance(messages, dict):
         thread["messages"] = list(messages.values())
         thread["messages"].sort(key=lambda x: x.get("timestamp", ""))
     
-    return jsonify({"success": True, "thread": thread}), 200
+    return JSONResponse(status_code=200, content={"success": True, "thread": thread})
 
 
-@messaging_bp.route("/thread", methods=["POST"])
-def create_or_get_thread():
+@messaging_router.post("/thread")
+async def create_or_get_thread(payload: Dict[str, Any] = Body(default_factory=dict)):
     """Create or retrieve a message thread for a product conversation."""
-    data = request.get_json() or {}
+    data = payload or {}
     required = ["product_id", "buyer_id", "seller_id"]
     for field in required:
         if not data.get(field):
-            return jsonify({"success": False, "error": f"Missing {field}"}), 400
+            return JSONResponse(status_code=400, content={"success": False, "error": f"Missing {field}"})
     
     thread = get_or_create_thread(
         data["product_id"], data["buyer_id"], data["seller_id"]
@@ -105,24 +106,24 @@ def create_or_get_thread():
         thread["messages"] = list(messages.values())
         thread["messages"].sort(key=lambda x: x.get("timestamp", ""))
         
-    return jsonify({"success": True, "thread": thread}), 200
+    return JSONResponse(status_code=200, content={"success": True, "thread": thread})
 
 
-@messaging_bp.route("/thread/<thread_id>/message", methods=["POST"])
-def send_message(thread_id):
+@messaging_router.post("/thread/{thread_id}/message")
+async def send_message(thread_id: str, payload: Dict[str, Any] = Body(default_factory=dict)):
     """Send a message in a thread."""
-    data = request.get_json() or {}
+    data = payload or {}
     required = ["sender_id", "content"]
     for field in required:
         if not data.get(field):
-            return jsonify({"success": False, "error": f"Missing {field}"}), 400
+            return JSONResponse(status_code=400, content={"success": False, "error": f"Missing {field}"})
     
     thread = MessagesAPI.get_thread(thread_id)
     if not thread:
-        return jsonify({"success": False, "error": "Thread not found"}), 404
+        return JSONResponse(status_code=404, content={"success": False, "error": "Thread not found"})
     
     if data["sender_id"] not in [thread.get("buyer_id"), thread.get("seller_id")]:
-        return jsonify({"success": False, "error": "Unauthorized sender"}), 403
+        return JSONResponse(status_code=403, content={"success": False, "error": "Unauthorized sender"})
     
     msg_id = str(uuid.uuid4())
     message = {
@@ -147,7 +148,6 @@ def send_message(thread_id):
                 "message": f"You have a new message: {data['content'][:50]}",
                 "read": False,
                 "created_at": int(time.time()),
-                "related_escrow_id": thread.get("escrow_id"),
                 "related_product_id": thread.get("product_id"),
                 "related_user_id": data["sender_id"],
                 "action_required": False
@@ -157,71 +157,50 @@ def send_message(thread_id):
         except Exception as e:
             print(f"[WARNING] Failed to generate message notification: {str(e)}")
             
-        return jsonify({"success": True, "message": message}), 201
-    return jsonify({"success": False, "error": "Failed to add message"}), 500
+        return JSONResponse(status_code=201, content={"success": True, "message": message})
+    return JSONResponse(status_code=500, content={"success": False, "error": "Failed to add message"})
 
 
-@messaging_bp.route("/thread/<thread_id>/mark-read", methods=["POST"])
-def mark_read(thread_id):
+@messaging_router.post("/thread/{thread_id}/mark-read")
+async def mark_read(thread_id: str, payload: Dict[str, Any] = Body(default_factory=dict)):
     """Mark all messages in a thread as read for a user."""
-    data = request.get_json() or {}
+    data = payload or {}
     user_id = data.get("user_id")
     if not user_id:
-        return jsonify({"success": False, "error": "user_id required"}), 400
+        return JSONResponse(status_code=400, content={"success": False, "error": "user_id required"})
     
     thread = MessagesAPI.get_thread(thread_id)
     if not thread:
-        return jsonify({"success": False, "error": "Thread not found"}), 404
+        return JSONResponse(status_code=404, content={"success": False, "error": "Thread not found"})
         
     messages = thread.get("messages", {})
     if not messages:
-        return jsonify({"success": True}), 200
+        return JSONResponse(status_code=200, content={"success": True})
         
     try:
         if isinstance(messages, dict):
             for msg_id, msg in messages.items():
                 if msg.get("sender_id") != user_id and not msg.get("read"):
                     db.reference(f'messages/{thread_id}/messages/{msg_id}/read').set(True)
-        return jsonify({"success": True}), 200
+        return JSONResponse(status_code=200, content={"success": True})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
 
 
-@messaging_bp.route("/thread/<thread_id>/link-escrow", methods=["POST"])
-def link_escrow(thread_id):
-    """Link an escrow session to a message thread."""
-    data = request.get_json() or {}
-    escrow_id = data.get("escrow_id")
-    if not escrow_id:
-        return jsonify({"success": False, "error": "escrow_id required"}), 400
-    
-    thread = MessagesAPI.get_thread(thread_id)
-    if not thread:
-        return jsonify({"success": False, "error": "Thread not found"}), 404
-        
-    try:
-        db.reference(f'messages/{thread_id}/escrow_id').set(escrow_id)
-        db.reference(f'messages/{thread_id}/updated_at').set(datetime.utcnow().isoformat())
-        thread["escrow_id"] = escrow_id
-        return jsonify({"success": True, "thread": thread}), 200
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
-
-
-@messaging_bp.route("/thread/<thread_id>/mark-sold", methods=["POST"])
-def mark_sold(thread_id):
+@messaging_router.post("/thread/{thread_id}/mark-sold")
+async def mark_sold(thread_id: str, payload: Dict[str, Any] = Body(default_factory=dict)):
     """Mark product as sold and close the thread."""
-    data = request.get_json() or {}
+    data = payload or {}
     user_id = data.get("user_id")
     if not user_id:
-        return jsonify({"success": False, "error": "user_id required"}), 400
+        return JSONResponse(status_code=400, content={"success": False, "error": "user_id required"})
     
     thread = MessagesAPI.get_thread(thread_id)
     if not thread:
-        return jsonify({"success": False, "error": "Thread not found"}), 404
+        return JSONResponse(status_code=404, content={"success": False, "error": "Thread not found"})
     
     if thread.get("seller_id") != user_id:
-        return jsonify({"success": False, "error": "Only seller can mark as sold"}), 403
+        return JSONResponse(status_code=403, content={"success": False, "error": "Only seller can mark as sold"})
         
     try:
         timestamp = datetime.utcnow().isoformat()
@@ -249,31 +228,30 @@ def mark_sold(thread_id):
             })
             
         thread["status"] = "sold"
-        return jsonify({"success": True, "thread": thread}), 200
+        return JSONResponse(status_code=200, content={"success": True, "thread": thread})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
 
 
-@messaging_bp.route("/thread/<thread_id>/close", methods=["POST"])
-def close_thread(thread_id):
+@messaging_router.post("/thread/{thread_id}/close")
+async def close_thread(thread_id: str, payload: Dict[str, Any] = Body(default_factory=dict)):
     """Close a thread without marking as sold."""
-    data = request.get_json() or {}
+    data = payload or {}
     user_id = data.get("user_id")
     if not user_id:
-        return jsonify({"success": False, "error": "user_id required"}), 400
+        return JSONResponse(status_code=400, content={"success": False, "error": "user_id required"})
     
     thread = MessagesAPI.get_thread(thread_id)
     if not thread:
-        return jsonify({"success": False, "error": "Thread not found"}), 404
+        return JSONResponse(status_code=404, content={"success": False, "error": "Thread not found"})
     
     if user_id not in [thread.get("buyer_id"), thread.get("seller_id")]:
-        return jsonify({"success": False, "error": "Unauthorized"}), 403
+        return JSONResponse(status_code=403, content={"success": False, "error": "Unauthorized"})
         
     try:
         db.reference(f'messages/{thread_id}/status').set("closed")
         db.reference(f'messages/{thread_id}/updated_at').set(datetime.utcnow().isoformat())
         thread["status"] = "closed"
-        return jsonify({"success": True, "thread": thread}), 200
+        return JSONResponse(status_code=200, content={"success": True, "thread": thread})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
-
+        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})

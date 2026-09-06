@@ -62,16 +62,12 @@ const coreLinks = [
 			</svg>
 		),
 	},
-];
-
-const aiTools = [
 	{
-		to: "/price-predictor",
-		label: "Price Estimator",
-		desc: "AI valuation for second-hand items",
+		to: "/messages",
+		label: "Messages",
 		icon: (
 			<svg
-				className="w-5 h-5"
+				className="w-4 h-4"
 				fill="none"
 				stroke="currentColor"
 				viewBox="0 0 24 24"
@@ -80,53 +76,7 @@ const aiTools = [
 					strokeLinecap="round"
 					strokeLinejoin="round"
 					strokeWidth="2"
-					d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-				/>
-			</svg>
-		),
-	},
-	{
-		to: "/image-search",
-		label: "Visual Search",
-		desc: "Find items with AI vision",
-		icon: (
-			<svg
-				className="w-5 h-5"
-				fill="none"
-				stroke="currentColor"
-				viewBox="0 0 24 24"
-			>
-				<path
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					strokeWidth="2"
-					d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-				/>
-				<path
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					strokeWidth="2"
-					d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-				/>
-			</svg>
-		),
-	},
-	{
-		to: "/logo-verifier",
-		label: "Brand Authenticator",
-		desc: "Verify logos with ML",
-		icon: (
-			<svg
-				className="w-5 h-5"
-				fill="none"
-				stroke="currentColor"
-				viewBox="0 0 24 24"
-			>
-				<path
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					strokeWidth="2"
-					d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+					d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
 				/>
 			</svg>
 		),
@@ -136,27 +86,12 @@ const aiTools = [
 const Navbar = () => {
 	const { theme, toggleTheme } = useTheme();
 	const { user } = useAuth();
-	const [isToolsOpen, setIsToolsOpen] = useState(false);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const [unreadNotifications, setUnreadNotifications] = useState(0);
-	const dropdownRef = useRef(null);
-
-	useEffect(() => {
-		const handleClickOutside = (event) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-				setIsToolsOpen(false);
-			}
-		};
-
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, []);
 
 	useEffect(() => {
 		let isFetching = false;
-		const currentUserId = user?.uid || localStorage.getItem("escrow_user_id");
+		const currentUserId = user?.uid || localStorage.getItem("user_id");
 		const fetchUnreadCount = async () => {
 			if (!currentUserId || isFetching) return;
 			isFetching = true;
@@ -238,74 +173,7 @@ const Navbar = () => {
 						</NavLink>
 					))}
 
-					{/* AI Tools Dropdown */}
-					<div className="relative" ref={dropdownRef}>
-						<button
-							onClick={() => setIsToolsOpen(!isToolsOpen)}
-							className={`rounded-full px-5 py-2 text-sm font-bold transition-all duration-300 flex items-center gap-2 ${
-								isToolsOpen
-									? "bg-slate-100 dark:bg-white/5 text-brand-600 dark:text-brand-400"
-									: "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-							}`}
-						>
-							<svg
-								className="w-4 h-4"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth="2"
-									d="M13 10V3L4 14h7v7l9-11h-7z"
-								/>
-							</svg>
-							AI Intelligence
-							<svg
-								className={`ml-1 w-3 h-3 transition-transform duration-300 ${isToolsOpen ? "rotate-180" : ""}`}
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth="2"
-									d="M19 9l-7 7-7-7"
-								/>
-							</svg>
-						</button>
 
-						{isToolsOpen && (
-							<div className="absolute top-full left-0 mt-2 w-72 rounded-3xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-white/10 p-2 animate-slide-up overflow-hidden">
-								<div className="p-3 mb-2 bg-brand-500/5 rounded-2xl border border-brand-500/10">
-									<p className="text-[10px] font-black tracking-widest text-brand-600 uppercase">
-										Proprietary ML Models
-									</p>
-								</div>
-								{aiTools.map((tool) => (
-									<Link
-										key={tool.to}
-										to={tool.to}
-										className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 group transition-all"
-									>
-										<div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-brand-500 group-hover:text-white transition-colors">
-											{tool.icon}
-										</div>
-										<div>
-											<p className="text-sm font-bold text-slate-900 dark:text-white">
-												{tool.label}
-											</p>
-											<p className="text-[10px] text-slate-500 dark:text-white/40 mt-1">
-												{tool.desc}
-											</p>
-										</div>
-									</Link>
-								))}
-							</div>
-						)}
-					</div>
 
 					<NavLink
 						to="/wishlist"
@@ -638,33 +506,7 @@ const Navbar = () => {
 								))}
 						</div>
 
-						<div className="mt-6">
-							<p className="text-[10px] uppercase tracking-[0.35em] text-slate-400 mb-4">
-								AI Tools
-							</p>
-							<div className="space-y-2.5">
-								{aiTools.map((tool) => (
-									<Link
-										key={tool.to}
-										to={tool.to}
-										onClick={() => setIsMobileMenuOpen(false)}
-										className="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:border-brand-500/50 transition-all"
-									>
-										<div className="w-9 h-9 rounded-2xl bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center text-brand-600">
-											{tool.icon}
-										</div>
-										<div>
-											<p className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-tight">
-												{tool.label}
-											</p>
-											<p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
-												{tool.desc}
-											</p>
-										</div>
-									</Link>
-								))}
-							</div>
-						</div>
+
 
 						<div className="mt-6 space-y-2.5">
 							{user ? (

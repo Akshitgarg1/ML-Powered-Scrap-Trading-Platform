@@ -18,9 +18,9 @@ const Footer = () => {
                             </span>
                         </Link>
                         <p className="max-w-xs text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-                            The first AI-integrated marketplace for high-performance resale assets.
-                            Delivering data-driven trust, verified brand authentication,
-                            and precise market valuation since 2024.
+                            A trusted marketplace for high-performance pre-owned assets.
+                            Delivering direct peer-to-peer trading, authentic condition reviews,
+                            and fair market values.
                         </p>
                         <div className="flex items-center gap-4 text-slate-400 dark:text-slate-600">
                             <button className="hover:text-brand-500 transition-colors p-2 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
@@ -46,21 +46,21 @@ const Footer = () => {
                         </ul>
                     </div>
 
-                    {/* AI Services Section */}
+                    {/* Direct Trading Section */}
                     <div className="space-y-6">
-                        <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-white">AI Intelligence</h4>
+                        <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-white">Direct Trading</h4>
                         <ul className="space-y-4">
-                            <li><Link to="/price-predictor" className="text-sm text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-400 transition-colors flex items-center gap-2 underline decoration-brand-500/20 underline-offset-4 decoration-2">Price Estimation</Link></li>
-                            <li><Link to="/logo-verifier" className="text-sm text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-400 transition-colors">Brand Authentication</Link></li>
-                            <li><Link to="/image-search" className="text-sm text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-400 transition-colors">Visual Search Engine</Link></li>
-                            <li><Link to="/" className="text-sm text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-400 transition-colors">Enterprise API</Link></li>
+                            <li><Link to="/messages" className="text-sm text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-400 transition-colors">Direct Messages</Link></li>
+                            <li><Link to="/my-orders" className="text-sm text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-400 transition-colors">Purchase Inquiries</Link></li>
+                            <li><Link to="/my-sold-items" className="text-sm text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-400 transition-colors">My Inventory</Link></li>
+                            <li><Link to="/notifications" className="text-sm text-slate-500 hover:text-brand-500 dark:text-slate-400 dark:hover:text-brand-400 transition-colors">Notifications</Link></li>
                         </ul>
                     </div>
 
                     {/* Newsletter / Contact Section */}
                     <div className="space-y-6">
                         <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-white">Ecosystem Update</h4>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Receive weekly market reports and exclusive AI-vetted deals.</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Receive weekly market reports and exclusive deals.</p>
                         <div className="relative group">
                             <input
                                 type="email"
@@ -85,10 +85,10 @@ const Footer = () => {
                 {/* Bottom Bar */}
                 <div className="mt-20 pt-10 border-t border-slate-100 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600">
-                        © 2026 TRADESMART AI HUB. INDUSTRIAL-GRADE TRADING SYSTEM.
+                        © 2026 TRADESMART PLATFORM. PEER-TO-PEER TRADING SYSTEM.
                     </p>
                     <div className="flex items-center gap-8">
-                        <Link to="/" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Neural Policy</Link>
+                        <Link to="/" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
                         <Link to="/" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Exchange</Link>
                     </div>
                 </div>

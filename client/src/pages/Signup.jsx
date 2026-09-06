@@ -67,7 +67,7 @@ const Signup = () => {
 						Join the Network
 					</h2>
 					<p className="mt-2 text-slate-600 dark:text-white/60 text-xs sm:text-sm italic">
-						Start your AI-powered trading journey today
+						Start your pre-owned trading journey today
 					</p>
 				</div>
 

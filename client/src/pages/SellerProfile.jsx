@@ -4,7 +4,6 @@ import ProductCard from "../components/listings/ProductCard";
 import {
 	getSellerProducts,
 	getUserById,
-	getUserEscrows,
 } from "../services/api";
 
 const SellerProfile = () => {
@@ -14,11 +13,6 @@ const SellerProfile = () => {
 	const [products, setProducts] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
-	const [successRate, setSuccessRate] = useState({
-		percent: null,
-		success: 0,
-		total: 0,
-	});
 
 	useEffect(() => {
 		const fetchSeller = async () => {
@@ -26,10 +20,9 @@ const SellerProfile = () => {
 			setError(null);
 
 			try {
-				const [sellerRes, productsRes, escrowsRes] = await Promise.all([
+				const [sellerRes, productsRes] = await Promise.all([
 					getUserById(sellerId),
 					getSellerProducts(sellerId),
-					getUserEscrows(sellerId),
 				]);
 
 				if (!sellerRes.success) {
@@ -37,24 +30,6 @@ const SellerProfile = () => {
 				}
 
 				setSeller(sellerRes.user);
-
-				// Success rate: released / total paid escrows for this seller.
-				const allEscrows = escrowsRes?.escrows || [];
-				const relevantEscrows = allEscrows.filter((e) => {
-					if (String(e?.seller_id || "") !== String(sellerId)) return false;
-					const paymentStatus = String(
-						e?.status_matrix?.payment_status || "PENDING",
-					).toUpperCase();
-					return paymentStatus !== "PENDING";
-				});
-				const total = relevantEscrows.length;
-				const success = relevantEscrows.filter(
-					(e) =>
-						String(e?.status_matrix?.escrow_status || "").toUpperCase() ===
-						"RELEASED",
-				).length;
-				const percent = total ? Math.round((success / total) * 100) : null;
-				setSuccessRate({ percent, success, total });
 
 				if (productsRes.success) {
 					setProducts(productsRes.products || []);
@@ -158,7 +133,7 @@ const SellerProfile = () => {
 						</div>
 					</div>
 
-					<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6">
 						<div className="rounded-3xl bg-slate-50 dark:bg-slate-900/40 p-6 border border-slate-200 dark:border-white/10">
 							<p className="text-xs uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400 mb-3">
 								Items Available
@@ -170,16 +145,13 @@ const SellerProfile = () => {
 
 						<div className="rounded-3xl bg-slate-50 dark:bg-slate-900/40 p-6 border border-slate-200 dark:border-white/10">
 							<p className="text-xs uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400 mb-3">
-								Trust Level
+								Trader Status
 							</p>
-							<p className="text-3xl font-bold text-brand-600 dark:text-brand-400">
-								{successRate.percent === null
-									? "N/A"
-									: `${successRate.percent}%`}
+							<p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+								Active Member
 							</p>
 							<p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-								Successful transactions: {successRate.success}/
-								{successRate.total}
+								Verified Marketplace Trader
 							</p>
 						</div>
 					</div>

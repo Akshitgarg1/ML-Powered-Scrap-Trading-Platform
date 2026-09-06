@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 
 const features = [
 	{
-		title: "AI Price Estimation",
-		text: "Leverage advanced machine learning to get accurate market value for your pre-owned items instantly.",
+		title: "Direct Buyer-Seller Chat",
+		text: "Negotiate directly with buyers and sellers in real time to coordinate pricing, inspection, and local pickup.",
 		icon: (
 			<svg
 				className="w-6 h-6"
@@ -16,14 +16,14 @@ const features = [
 					strokeLinecap="round"
 					strokeLinejoin="round"
 					strokeWidth="2"
-					d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+					d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
 				/>
 			</svg>
 		),
 	},
 	{
-		title: "Visual Search",
-		text: "Find exactly what you're looking for by simply uploading a photo. Our AI identifies items with precision.",
+		title: "Curated Categories",
+		text: "Easily explore laptops, smartphones, vehicles, furniture, and tools with smart category filtering.",
 		icon: (
 			<svg
 				className="w-6 h-6"
@@ -35,20 +35,14 @@ const features = [
 					strokeLinecap="round"
 					strokeLinejoin="round"
 					strokeWidth="2"
-					d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-				/>
-				<path
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					strokeWidth="2"
-					d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+					d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
 				/>
 			</svg>
 		),
 	},
 	{
-		title: "Logo Verification",
-		text: "Ensure brand authenticity with our neural network-based logo verification system for second-hand electronics.",
+		title: "Transparent Condition Reviews",
+		text: "Browse multi-photo listings with authentic condition ratings and seller profiles you can trust.",
 		icon: (
 			<svg
 				className="w-6 h-6"
@@ -102,13 +96,13 @@ const Home = () => {
 					</h1>
 
 					<p className="mx-auto max-w-2xl text-sm sm:text-base md:text-lg lg:text-xl text-slate-600 dark:text-slate-400/80 leading-relaxed transition-colors duration-300">
-						A next-generation marketplace powered by AI. Get precise pricing,
-						instant visual search, and verified listings for a more efficient
-						trading experience.
+						A modern peer-to-peer marketplace. Connect directly with buyers and
+						sellers, inspect quality listings, and trade pre-owned items with
+						confidence.
 					</p>
 
 					<div className="flex flex-col gap-6 items-center pt-8 px-4 sm:px-0 w-full">
-						{/* Enhanced AI Search Bar */}
+						{/* Search Bar */}
 						<div className="w-full max-w-2xl relative group/search">
 							<div className="absolute -inset-1 bg-gradient-to-r from-brand-500/20 via-brand-400/20 to-brand-600/20 blur-2xl opacity-0 group-hover/search:opacity-100 transition-opacity duration-700"></div>
 
@@ -228,16 +222,15 @@ const Home = () => {
 						<div className="flex gap-4 pt-4">
 							<Link
 								to="/sell"
-								className="btn-secondary !bg-white/50 dark:!bg-white/5"
+								className="btn-gradient"
 							>
 								Sell an Item
 							</Link>
 							<Link
-								to="/price-predictor"
-								className="btn-ghost flex items-center gap-2"
+								to="/browse"
+								className="btn-secondary !bg-white/50 dark:!bg-white/5"
 							>
-								<span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
-								Check Resale Value AI
+								Browse Marketplace
 							</Link>
 						</div>
 					</div>
@@ -475,18 +468,18 @@ const Home = () => {
 						{[
 							{
 								step: "01",
-								title: "Snapshot & Scan",
-								desc: "Upload images and let our AI categorize and grade the condition instantly.",
+								title: "Snap & Describe",
+								desc: "Upload clear photos and provide accurate condition details for your item.",
 							},
 							{
 								step: "02",
-								title: "Smart Pricing",
-								desc: "Receive AI-driven market valuations based on real-time global resale data.",
+								title: "Set Your Price",
+								desc: "List your item and receive direct inquiries from interested buyers.",
 							},
 							{
-								title: "Verified Trade",
-								desc: "Connect with verified buyers and finalize your deal with confidence.",
 								step: "03",
+								title: "Direct Trade",
+								desc: "Chat directly, arrange local inspection, and complete your trade safely.",
 							},
 						].map((item, idx) => (
 							<div
@@ -508,7 +501,7 @@ const Home = () => {
 				</div>
 			</div>
 
-			{/* AI Trust Section */}
+			{/* Direct Trading Trust Section */}
 			<div className="section-container !py-40">
 				<div className="flex flex-col lg:flex-row items-center gap-16">
 					<div className="lg:w-1/2">
@@ -516,27 +509,27 @@ const Home = () => {
 							Engineered for Trust
 						</div>
 						<h2 className="section-heading !text-3xl md:!text-4xl text-center md:text-left leading-tight">
-							Verified with <span className="text-gradient">ML-Precision</span>
+							Trade with <span className="text-gradient">Total Confidence</span>
 						</h2>
 						<p className="mt-6 text-slate-600 dark:text-slate-400 text-base md:text-lg leading-relaxed text-center md:text-left px-2 md:px-0">
-							We don't just list products; we analyze them. Our proprietary AI
-							tools perform visual verification and neural pricing analysis to
-							ensure you get the best deal, every time.
+							We empower buyers and sellers with direct, unfiltered communication.
+							Inspect high-resolution photos, review seller history, and coordinate
+							safe peer-to-peer exchanges on your terms.
 						</p>
 
 						<div className="mt-10 space-y-6">
 							{[
 								{
-									title: "Neural Price Guard",
-									desc: "Prevents overpricing with real-time market data.",
+									title: "Direct Real-Time Chat",
+									desc: "Message sellers instantly to ask questions, negotiate price, or arrange meeting details.",
 								},
 								{
-									title: "Visual Artifact Check",
-									desc: "Detected fake logos and hardware clones instantly.",
+									title: "Transparent Condition Grading",
+									desc: "Detailed descriptions and authentic photos provide full clarity on every item.",
 								},
 								{
-									title: "Condition Verification",
-									desc: "Scans images to verify 'Like New' claims.",
+									title: "Community Ratings & Feedback",
+									desc: "Verified reviews and ratings help you trade with trusted community members.",
 								},
 							].map((perk) => (
 								<div
@@ -573,7 +566,7 @@ const Home = () => {
 						<div className="relative glass-panel !rounded-[3rem] p-4 aspect-square overflow-hidden group">
 							<img
 								src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1000"
-								alt="AI Analysis Interface"
+								alt="Marketplace Interface"
 								className="w-full h-full object-cover rounded-[2.5rem] group-hover:scale-105 transition-transform duration-1000"
 							/>
 							<div className="absolute inset-0 bg-brand-500/10 mix-blend-overlay"></div>
@@ -605,17 +598,17 @@ const Home = () => {
 					<div className="flex flex-col lg:flex-row items-center gap-12 mb-10">
 						<div className="lg:w-1/2">
 							<h2 className="section-heading text-3xl md:text-4xl text-left">
-								Powerful AI Tools
+								Trading Built for Simplicity
 							</h2>
 							<p className="section-subheading mt-4 text-left">
-								We've built specialized machine learning models to help you
-								accurately value and identify your assets.
+								Enjoy a clean, direct trading experience with fast communication
+								and zero unnecessary friction.
 							</p>
 							<div className="mt-8 flex flex-col gap-4">
 								{[
-									"Neural Price Estimation",
-									"Logo Verification API",
-									"Visual Component Search",
+									"Direct Buyer-Seller Chat",
+									"Multi-Photo Asset Inspections",
+									"Instant Deal Negotiations",
 								].map((item) => (
 									<div
 										key={item}
@@ -641,7 +634,7 @@ const Home = () => {
 							<div className="relative rounded-3xl overflow-hidden glass-panel aspect-square lg:aspect-video group">
 								<img
 									src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1000"
-									alt="AI Product Analysis"
+									alt="Product Inspection"
 									className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
 								/>
 								<div className="absolute inset-0 bg-brand-900/40 mix-blend-multiply transition-opacity group-hover:opacity-20"></div>

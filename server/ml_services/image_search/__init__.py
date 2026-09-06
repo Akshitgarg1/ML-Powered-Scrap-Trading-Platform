@@ -1,1 +1,0 @@
-from .search_engine import search_similar_images

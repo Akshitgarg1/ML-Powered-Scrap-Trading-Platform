@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createListing, verifyLogo } from "../../services/api";
+import { createListing } from "../../services/api";
 import { LISTING_CATEGORY_OPTIONS } from "../../utils/constants";
 
 const UploadForm = () => {
@@ -20,18 +20,6 @@ const UploadForm = () => {
 	const [imagePreviews, setImagePreviews] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [message, setMessage] = useState("");
-	const [logoVisible, setLogoVisible] = useState(null);
-	const [logoVerifyFile, setLogoVerifyFile] = useState(null);
-	const [logoVerifyLoading, setLogoVerifyLoading] = useState(false);
-	const [logoVerifyError, setLogoVerifyError] = useState("");
-	const [logoVerifyResult, setLogoVerifyResult] = useState(null);
-
-	const resetLogoVerification = () => {
-		setLogoVerifyFile(null);
-		setLogoVerifyLoading(false);
-		setLogoVerifyError("");
-		setLogoVerifyResult(null);
-	};
 
 	const handleChange = (e) => {
 		const { name, value, type, files } = e.target;
@@ -80,42 +68,12 @@ const UploadForm = () => {
 		setImagePreviews(newPreviews);
 	};
 
-	const handleVerifyLogoNow = async () => {
-		if (!logoVerifyFile) {
-			setLogoVerifyError("Please upload a clear logo image first.");
-			return;
-		}
 
-		setLogoVerifyLoading(true);
-		setLogoVerifyError("");
-		setLogoVerifyResult(null);
-		try {
-			const brandHint = String(formData.brand || "").trim();
-			const res = await verifyLogo({
-				imageFile: logoVerifyFile,
-				brand: brandHint || undefined,
-			});
-			if (res?.success === false) {
-				throw new Error(res?.error || "Logo verification failed.");
-			}
-			setLogoVerifyResult(res);
-		} catch (err) {
-			setLogoVerifyError(err.message);
-		} finally {
-			setLogoVerifyLoading(false);
-		}
-	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setLoading(true);
 		setMessage("");
-
-		if (logoVisible === null) {
-			setLoading(false);
-			setMessage("Please confirm whether the logo is visible (Yes/No).");
-			return;
-		}
 
 		try {
 			const payload = new FormData();
@@ -126,13 +84,6 @@ const UploadForm = () => {
 			payload.append("condition", formData.condition);
 			payload.append("price", String(Number(formData.price)));
 			payload.append("year", String(Number(formData.year)));
-			payload.append("logo_visible", String(logoVisible));
-			if (
-				logoVisible === true &&
-				typeof logoVerifyResult?.is_genuine === "boolean"
-			) {
-				payload.append("logo_verification", JSON.stringify(logoVerifyResult));
-			}
 
 			formData.images.forEach((file) => {
 				payload.append("images", file);
@@ -152,8 +103,6 @@ const UploadForm = () => {
 					images: [],
 				});
 				setImagePreviews([]);
-				setLogoVisible(null);
-				resetLogoVerification();
 				setTimeout(() => navigate("/browse?my_inventory=1"), 800);
 			}
 		} catch (err) {
@@ -165,19 +114,6 @@ const UploadForm = () => {
 
 	const fieldClass =
 		"input-field placeholder-gray-500 text-sm md:text-base rounded-2xl";
-
-	const logoStatusLabel =
-		logoVerifyResult?.is_genuine === true
-			? "Genuine product"
-			: logoVerifyResult?.is_genuine === false
-				? "Counterfeit product"
-				: "Logo not verified";
-	const logoStatusClasses =
-		logoVerifyResult?.is_genuine === true
-			? "border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400"
-			: logoVerifyResult?.is_genuine === false
-				? "border-rose-500/20 bg-rose-500/5 text-rose-600 dark:text-rose-400"
-				: "border-slate-200/30 bg-slate-500/5 text-slate-600 dark:text-white/70";
 
 	return (
 		<div className="glass-panel-dark overflow-hidden p-0 shadow-2xl transition-colors duration-300 border border-white/10">
@@ -476,110 +412,6 @@ const UploadForm = () => {
 							placeholder="Enter listing amount"
 							className={`${fieldClass} text-xl font-bold py-5`}
 						/>
-					</div>
-
-					<div className="grid gap-6 md:grid-cols-2">
-						<div>
-							<label className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-white/40 mb-2 block">
-								Logo visible? *
-							</label>
-							<div className="grid grid-cols-2 gap-3">
-								<button
-									type="button"
-									onClick={() => {
-										setLogoVisible(true);
-										setLogoVerifyError("");
-									}}
-									className={`rounded-2xl border px-4 py-3 text-sm font-bold transition-all duration-300 ${
-										logoVisible === true
-											? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-											: "border-slate-200 text-slate-600 dark:border-white/10 dark:text-white/70"
-									}`}
-								>
-									Yes
-								</button>
-								<button
-									type="button"
-									onClick={() => {
-										setLogoVisible(false);
-										resetLogoVerification();
-									}}
-									className={`rounded-2xl border px-4 py-3 text-sm font-bold transition-all duration-300 ${
-										logoVisible === false
-											? "border-rose-500 bg-rose-500/10 text-rose-600 dark:text-rose-400"
-											: "border-slate-200 text-slate-600 dark:border-white/10 dark:text-white/70"
-									}`}
-								>
-									No
-								</button>
-							</div>
-							<p className="mt-2 text-xs text-slate-500 dark:text-white/50">
-								If you choose No, the product page will show “logo not present”.
-							</p>
-						</div>
-
-						{logoVisible === true && (
-							<div>
-								<label className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-white/40 mb-2 block">
-									Verify logo (optional)
-								</label>
-								<input
-									type="file"
-									accept="image/*"
-									onChange={(e) => {
-										const file = e.target.files?.[0] || null;
-										setLogoVerifyFile(file);
-										setLogoVerifyError("");
-										setLogoVerifyResult(null);
-									}}
-									className={`${fieldClass} py-3 cursor-pointer file:hidden`}
-								/>
-								<div className="mt-3 flex gap-3">
-									<button
-										type="button"
-										onClick={handleVerifyLogoNow}
-										disabled={logoVerifyLoading}
-										className="btn-gradient flex-1 justify-center !py-3 disabled:opacity-60"
-									>
-										{logoVerifyLoading ? "Verifying..." : "Verify now"}
-									</button>
-								</div>
-								<p className="mt-2 text-xs text-slate-500 dark:text-white/50">
-									You can also verify later from the product details page.
-								</p>
-
-								{logoVerifyError && (
-									<div className="mt-3 rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4 text-sm text-rose-600 dark:text-rose-400">
-										{logoVerifyError}
-									</div>
-								)}
-
-								{logoVerifyResult &&
-									typeof logoVerifyResult?.is_genuine === "boolean" && (
-										<div
-											className={`mt-3 rounded-2xl border p-4 ${logoStatusClasses}`}
-										>
-											<p className="text-xs font-bold uppercase tracking-widest opacity-80">
-												Result
-											</p>
-											<p className="mt-1 text-lg font-bold">
-												{logoStatusLabel}
-											</p>
-											{typeof logoVerifyResult?.confidence === "number" && (
-												<p className="mt-1 text-xs opacity-80">
-													Match score:{" "}
-													{(logoVerifyResult.confidence * 100).toFixed(1)}%
-												</p>
-											)}
-											{logoVerifyResult?.explanation && (
-												<p className="mt-2 text-sm opacity-90">
-													{logoVerifyResult.explanation}
-												</p>
-											)}
-										</div>
-									)}
-							</div>
-						)}
 					</div>
 
 					<div className="pt-4">

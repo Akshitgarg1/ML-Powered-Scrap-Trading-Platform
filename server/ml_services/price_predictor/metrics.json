@@ -1,8 +1,0 @@
-{
-    "model": "RandomForestRegressor",
-    "mae": 1969.491623986255,
-    "rmse": 3037.0718166005777,
-    "r2": 0.9861085455052648,
-    "dataset_size": 5000,
-    "test_size": 750
-}

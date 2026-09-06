@@ -49,61 +49,6 @@ api.interceptors.response.use(
 	},
 );
 
-// ---------------------- AI ENDPOINTS ----------------------
-
-export const predictPrice = async (data) => {
-	const res = await api.post("/ai/predict-price", data);
-	return res.data;
-};
-
-export const getPriceRange = async () => {
-	const res = await api.get("/ai/price-range");
-	return res.data;
-};
-
-export const healthCheck = async () => {
-	const res = await api.get("/health");
-	return res.data;
-};
-
-// ---------------------- IMAGE SEARCH ----------------------
-
-export const imageSearch = async (imageFile) => {
-	const form = new FormData();
-	form.append("image", imageFile);
-
-	const res = await api.post("/image/search", form, {
-		headers: { "Content-Type": "multipart/form-data" },
-	});
-
-	return res.data;
-};
-
-export const imageHealthCheck = async () => {
-	const res = await api.get("/image/health");
-	return res.data;
-};
-
-// ---------------------- FAKE LOGO VERIFICATION ----------------------
-
-export const getLogoBrands = async () => {
-	const res = await api.get("/logo/brands");
-	return res.data;
-};
-
-export const verifyLogo = async ({ imageFile, brand }) => {
-	const form = new FormData();
-	form.append("image", imageFile);
-	if (brand) {
-		form.append("brand", brand);
-	}
-
-	const res = await api.post("/logo/verify", form, {
-		headers: { "Content-Type": "multipart/form-data" },
-	});
-
-	return res.data;
-};
 
 // ---------------------- RECOMMENDATIONS ----------------------
 
@@ -135,33 +80,7 @@ export const getProduct = async (id) => {
 	return res.data;
 };
 
-export const updateListingLogoVisibility = async ({
-	productId,
-	logoVisible,
-}) => {
-	const res = await api.patch(`/products/listings/${productId}/logo-visibility`, {
-		logo_visible: logoVisible,
-	});
-	return res.data;
-};
 
-export const verifyListingLogo = async ({ productId, imageFile, brand }) => {
-	const form = new FormData();
-	form.append("image", imageFile);
-	if (brand) {
-		form.append("brand", brand);
-	}
-
-	const res = await api.post(
-		`/products/listings/${productId}/logo/verify`,
-		form,
-		{
-			headers: { "Content-Type": "multipart/form-data" },
-		},
-	);
-
-	return res.data;
-};
 
 export const getSellerProducts = async (sellerId) => {
 	const res = await api.get(`/products/listings`, {
@@ -241,13 +160,6 @@ export const getMyListings = async () => {
 	return res.data;
 };
 
-// ---------------------- ESCROW ORDERS ----------------------
-
-export const getUserEscrows = async (userId) => {
-	const res = await api.get(`/escrow/user/${userId}`);
-	return res.data;
-};
-
 // Feedback endpoints
 export const submitProductFeedback = async (feedbackData) => {
 	const res = await api.post("/feedback/product", feedbackData);
@@ -263,67 +175,6 @@ export const deleteProductFeedback = async (feedbackId, userId) => {
 	const res = await api.delete(`/feedback/product/${feedbackId}`, {
 		data: { user_id: userId },
 	});
-	return res.data;
-};
-
-// ---------------------- ESCROW TRANSACTIONS ----------------------
-
-export const initializeEscrow = async (data) => {
-	const res = await api.post("/escrow/order", data);
-	return res.data;
-};
-
-export const processEscrowAction = async (data) => {
-	const res = await api.post("/escrow/process-action", data);
-	return res.data;
-};
-
-export const getEscrowDetails = async (escrowId) => {
-	const res = await api.get(`/escrow/${escrowId}`);
-	return res.data;
-};
-
-// ---------------------- PAYMENT ENDPOINTS ----------------------
-
-export const createPaymentIntent = async (data) => {
-	const res = await api.post("/payment/create-payment-intent", data);
-	return res.data;
-};
-
-export const confirmPaymentIntent = async (data) => {
-	const res = await api.post("/payment/confirm-payment-intent", data);
-	return res.data;
-};
-
-export const simulatePayment = async (data) => {
-	const res = await api.post("/payment/simulate-payment", data);
-	return res.data;
-};
-
-export const getUserWallet = async (userId) => {
-	const res = await api.get(`/payment/wallet/${userId}`);
-	return res.data;
-};
-
-// ---------------------- EARNINGS ENDPOINTS ----------------------
-
-export const getUserEarnings = async (userId) => {
-	const res = await api.get(`/wallet/earnings/${userId}`);
-	return res.data;
-};
-
-export const sendCashoutOtp = async (payload) => {
-	const res = await api.post(`/wallet/cashout/send-otp`, payload);
-	return res.data;
-};
-
-export const verifyCashoutOtp = async (payload) => {
-	const res = await api.post(`/wallet/cashout/verify-otp`, payload);
-	return res.data;
-};
-
-export const requestCashout = async (payload) => {
-	const res = await api.post(`/wallet/cashout/request`, payload);
 	return res.data;
 };
 
@@ -369,15 +220,7 @@ export const clearAllNotifications = async (userId) => {
 	return res.data;
 };
 
-export const createTransactionNotification = async (data) => {
-	const res = await api.post("/notifications/transaction-start", data);
-	return res.data;
-};
 
-export const createPaymentStartedNotification = async (data) => {
-	const res = await api.post("/notifications/payment-started", data);
-	return res.data;
-};
 
 // ---------------------- MESSAGING ENDPOINTS ----------------------
 
@@ -421,13 +264,6 @@ export const markThreadRead = async (threadId, userId) => {
 	return res.data;
 };
 
-export const linkEscrowToThread = async (threadId, escrowId) => {
-	const res = await api.post(`/messaging/thread/${threadId}/link-escrow`, {
-		escrow_id: escrowId,
-	});
-	return res.data;
-};
-
 export const markThreadSold = async (threadId, userId) => {
 	const res = await api.post(`/messaging/thread/${threadId}/mark-sold`, {
 		user_id: userId,
@@ -438,24 +274,6 @@ export const markThreadSold = async (threadId, userId) => {
 export const closeMessageThread = async (threadId, userId) => {
 	const res = await api.post(`/messaging/thread/${threadId}/close`, {
 		user_id: userId,
-	});
-	return res.data;
-};
-
-// ---------------------- DISPUTES ENDPOINTS ----------------------
-
-export const reportDispute = async ({ escrow_id, option, reason }) => {
-	const res = await api.post(`/disputes/report`, {
-		escrow_id,
-		option,
-		reason,
-	});
-	return res.data;
-};
-
-export const confirmReturn = async ({ escrow_id }) => {
-	const res = await api.post(`/disputes/confirm-return`, {
-		escrow_id,
 	});
 	return res.data;
 };

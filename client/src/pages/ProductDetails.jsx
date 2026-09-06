@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
 	getProduct,
 	getProductRecommendations,
-	updateListingLogoVisibility,
-	verifyListingLogo,
-	initializeEscrow,
+	createOrGetMessageThread,
 	getUserWatchlist,
 	addToWatchlist,
 	removeFromWatchlist,
@@ -21,18 +19,13 @@ const ProductDetails = () => {
 	const { user } = useAuth();
 	const [product, setProduct] = useState(null);
 	const [loading, setLoading] = useState(true);
-	const [escrowLoading, setEscrowLoading] = useState(false);
+	const [chatLoading, setChatLoading] = useState(false);
 	const [wishlisted, setWishlisted] = useState(false);
 	const [shareStatus, setShareStatus] = useState("");
 	const [recommendations, setRecommendations] = useState([]);
 	const [recommendationLoading, setRecommendationLoading] = useState(true);
 	const [feedbackRefresh, setFeedbackRefresh] = useState(0);
 	const [currentImageIndex, setCurrentImageIndex] = useState(0);
-	const [logoVerifyFile, setLogoVerifyFile] = useState(null);
-	const [logoVerifyLoading, setLogoVerifyLoading] = useState(false);
-	const [logoVerifyError, setLogoVerifyError] = useState("");
-	const [logoVisibilityLoading, setLogoVisibilityLoading] = useState(false);
-	const [logoVisibilityError, setLogoVisibilityError] = useState("");
 
 	const isOwner =
 		user?.uid &&
@@ -40,37 +33,44 @@ const ProductDetails = () => {
 			product?.seller_id === user.uid ||
 			product?.owner_id === user.uid);
 
-	const handleBuy = async () => {
+	const handleChatWithSeller = async () => {
 		if (isOwner) {
 			return;
 		}
 
-		setEscrowLoading(true);
+		if (!user?.uid) {
+			navigate("/signin");
+			return;
+		}
+
+		setChatLoading(true);
 		try {
-			let buyerId =
-				user?.uid || localStorage.getItem("escrow_user_id") || "demo_buyer";
-			localStorage.setItem("escrow_user_id", buyerId);
-			localStorage.setItem("escrow_user_role", "BUYER");
+			const sellerId =
+				product?.seller_id ||
+				product?.user_id ||
+				product?.owner_id;
 
-			const res = await initializeEscrow({
-				product_id: product.id || product._id,
-				buyer_id: buyerId,
-				seller_id:
-					product.seller_id ||
-					product.user_id ||
-					product.owner_id ||
-					"demo_seller",
-				amount: product.price,
-			});
+			if (!sellerId) {
+				alert("Seller details not found for this listing.");
+				return;
+			}
 
-			if (res.success) {
-				// Navigate to the new escrow
-				navigate(`/escrow/${res.escrow_id}`);
+			const res = await createOrGetMessageThread(
+				product.id || product._id,
+				user.uid,
+				sellerId,
+			);
+
+			if (res?.success && res.thread) {
+				navigate(`/messages/${res.thread.id}`);
+			} else {
+				navigate("/messages");
 			}
 		} catch (err) {
-			alert("Escrow Initiation Failed: " + err.message);
+			console.error("Chat initiation error:", err);
+			alert("Could not start chat: " + (err.response?.data?.error || err.message));
 		} finally {
-			setEscrowLoading(false);
+			setChatLoading(false);
 		}
 	};
 
@@ -92,72 +92,11 @@ const ProductDetails = () => {
 			const res = await getProduct(id);
 			if (res.success) {
 				setProduct(res.product);
-				setLogoVerifyError("");
-				setLogoVisibilityError("");
 			}
 		} catch (err) {
 			console.error("Error loading product:", err);
 		} finally {
 			setLoading(false);
-		}
-	};
-
-	const handleVerifyLogo = async () => {
-		if (!isOwner) {
-			return;
-		}
-		if (!logoVerifyFile) {
-			setLogoVerifyError("Please upload a clear logo image first.");
-			return;
-		}
-		setLogoVerifyLoading(true);
-		setLogoVerifyError("");
-		try {
-			const brandHint = String(product?.brand || "").trim();
-			const res = await verifyListingLogo({
-				productId: id,
-				imageFile: logoVerifyFile,
-				brand: brandHint || undefined,
-			});
-			if (res?.success === false) {
-				throw new Error(res?.error || "Logo verification failed.");
-			}
-			if (res?.product) {
-				setProduct(res.product);
-			}
-			setLogoVerifyFile(null);
-		} catch (err) {
-			setLogoVerifyError(err.message);
-		} finally {
-			setLogoVerifyLoading(false);
-		}
-	};
-
-	const handleSetLogoVisibility = async (logoVisible) => {
-		if (!isOwner) {
-			return;
-		}
-
-		setLogoVisibilityLoading(true);
-		setLogoVisibilityError("");
-		setLogoVerifyError("");
-
-		try {
-			const res = await updateListingLogoVisibility({
-				productId: id,
-				logoVisible,
-			});
-			if (res?.success === false) {
-				throw new Error(res?.error || "Could not update logo visibility.");
-			}
-			if (res?.product) {
-				setProduct(res.product);
-			}
-			setLogoVerifyFile(null);
-		} catch (err) {
-			setLogoVisibilityError(err.message);
-		} finally {
-			setLogoVisibilityLoading(false);
 		}
 	};
 
@@ -272,128 +211,9 @@ if (url.startsWith("/uploads/")) return `${backendUrl}${url}`;
 		product?.seller_name || product?.seller_username || sellerId || "Seller";
 	const sellerLink = sellerId ? `/seller/${sellerId}` : "/browse";
 
-	const rawLogoStatus = product?.logo_status;
-	const rawLogoVerifyStatus = product?.logo_verify_status;
-	const normalizedLogoStatus =
-		typeof rawLogoStatus === "string" ? rawLogoStatus.trim().toLowerCase() : "";
-	const normalizedLogoVerifyStatus =
-		typeof rawLogoVerifyStatus === "string"
-			? rawLogoVerifyStatus.trim().toLowerCase()
-			: "";
-	const verificationIsGenuine =
-		typeof product?.logo_verification?.is_genuine === "boolean"
-			? product.logo_verification.is_genuine
-			: null;
-
-	let logoStatus = normalizedLogoStatus;
-	let logoVerifyStatus = normalizedLogoVerifyStatus;
-	let logoVisible =
-		typeof product?.logo_visible === "boolean" ? product.logo_visible : null;
-
-	if (verificationIsGenuine !== null) {
-		logoStatus = logoStatus || (verificationIsGenuine ? "verified" : "counterfeit");
-		logoVerifyStatus =
-			logoVerifyStatus || (verificationIsGenuine ? "genuine" : "fake");
-		logoVisible = true;
-	}
-
-	if (!logoStatus) {
-		if (logoVisible === false) {
-			logoStatus = "not available";
-		} else if (logoVisible === true) {
-			logoStatus = "unverified";
-		} else {
-			logoStatus = "unknown";
-		}
-	}
-
-	if (!logoVerifyStatus) {
-		if (logoStatus === "verified") {
-			logoVerifyStatus = "genuine";
-		} else if (logoStatus === "counterfeit") {
-			logoVerifyStatus = "fake";
-		} else if (logoStatus === "not available") {
-			logoVerifyStatus = "logo unavailable";
-		} else if (logoStatus === "unverified") {
-			logoVerifyStatus = "unverified";
-		} else {
-			logoVerifyStatus = "unknown";
-		}
-	}
-
-	if (logoStatus === "verified" || logoStatus === "counterfeit") {
-		logoVisible = true;
-	} else if (logoStatus === "not available") {
-		logoVisible = false;
-	}
-
-	const logoIsVerified =
-		logoVerifyStatus === "verified" ||
-		logoVerifyStatus === "genuine" ||
-		logoVerifyStatus === "fake" ||
-		logoVerifyStatus === "counterfeit";
-	const logoStatusUnknown =
-		logoStatus === "unknown" || logoVerifyStatus === "unknown";
-	const logoIsGenuine =
-		logoVerifyStatus === "verified" || logoVerifyStatus === "genuine"
-			? true
-			: logoVerifyStatus === "fake" || logoVerifyStatus === "counterfeit"
-				? false
-				: verificationIsGenuine !== null
-					? verificationIsGenuine
-					: undefined;
-
-	const logoLabel =
-		logoStatusUnknown
-			? "Logo status not set"
-			: logoVerifyStatus === "logo unavailable" || logoVisible === false
-			? "Logo not present"
-			: logoIsVerified
-				? "Logo verified"
-				: "Logo not verified";
-	const verdictBrand = String(
-		product?.brand || product?.logo_verification?.best_brand_match || "",
-	).trim();
-	const logoVerdictLabel =
-		logoVisible !== false && logoIsVerified
-			? logoIsGenuine
-				? `Genuine Product${verdictBrand ? ` ${verdictBrand}` : ""}`
-				: `Counterfeit Product${verdictBrand ? ` ${verdictBrand}` : ""}`
-			: "";
-	const logoCardClasses =
-		logoStatusUnknown
-			? "border-amber-500/20 bg-amber-500/5 text-amber-700 dark:text-amber-300"
-			: logoVerifyStatus === "logo unavailable" || logoVisible === false
-			? "border-slate-200/30 bg-slate-500/5 text-slate-600 dark:text-white/70"
-			: logoVerifyStatus === "genuine" ||
-				  (logoIsVerified && logoIsGenuine === true)
-				? "border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400"
-				: logoVerifyStatus === "fake" ||
-					  (logoIsVerified && logoIsGenuine === false)
-					? "border-rose-500/20 bg-rose-500/5 text-rose-600 dark:text-rose-400"
-					: "border-slate-200/30 bg-slate-500/5 text-slate-600 dark:text-white/70";
-
-	const authenticityBadgeLabel =
-		logoStatusUnknown
-			? "Status not set"
-			: logoVerifyStatus === "genuine" || logoVerifyStatus === "verified"
-			? "Verified"
-			: logoVerifyStatus === "fake" || logoVerifyStatus === "counterfeit"
-				? "Counterfeit"
-				: logoVerifyStatus === "logo unavailable"
-					? "Not available"
-					: "Unverified";
-	const authenticityBadgeClasses =
-		logoStatusUnknown
-			? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/10"
-			: logoVerifyStatus === "genuine" || logoVerifyStatus === "verified"
-			? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/10"
-			: logoVerifyStatus === "fake" || logoVerifyStatus === "counterfeit"
-				? "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 border-rose-500/10"
-				: "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/70 border-slate-200/40 dark:border-white/10";
-
-	const canVerifyLogo =
-		isOwner && logoVisible === true && !logoIsVerified && !logoStatusUnknown;
+	const conditionBadgeLabel = product?.condition
+		? `${product.condition} Condition`
+		: "Verified Listing";
 
 	return (
 		<div className="min-h-screen py-6 transition-colors duration-500">
@@ -572,10 +392,8 @@ if (url.startsWith("/uploads/")) return `${backendUrl}${url}`;
 								<p className="text-4xl font-display font-bold text-slate-900 dark:text-white">
 									{formatPrice(product.price)}
 								</p>
-								<span
-									className={`text-xs font-semibold px-2 py-1 rounded border ${authenticityBadgeClasses}`}
-								>
-									{authenticityBadgeLabel}
+								<span className="text-xs font-semibold px-2.5 py-1 rounded-full border border-brand-500/20 bg-brand-500/10 text-brand-600 dark:text-brand-400">
+									{conditionBadgeLabel}
 								</span>
 							</div>
 						</div>
@@ -584,129 +402,50 @@ if (url.startsWith("/uploads/")) return `${backendUrl}${url}`;
 							{product.description}
 						</p>
 
-						<div className={`rounded-2xl border p-5 ${logoCardClasses}`}>
-							<p className="text-[10px] font-bold uppercase tracking-[0.25em] opacity-70">
-								Logo status
-							</p>
-							<p className="mt-1 text-lg font-bold">{logoLabel}</p>
-							{logoVerdictLabel && (
-								<p className="mt-1 text-sm font-semibold opacity-90">
-									{logoVerdictLabel}
-								</p>
-							)}
-
-							{logoStatusUnknown && (
-								<div className="mt-4 space-y-3">
-									<p className="text-sm opacity-90">
-										{isOwner
-											? "Is the brand logo visible on this item?"
-											: "Seller has not set logo visibility yet."}
+						{/* Seller Information & Direct Trading Card */}
+						<div className="rounded-2xl border border-slate-200 dark:border-white/10 p-5 bg-slate-50 dark:bg-slate-900/40 space-y-3">
+							<div className="flex items-center justify-between">
+								<div>
+									<p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+										Seller
 									</p>
-
-									{isOwner && (
-										<div className="grid grid-cols-2 gap-3">
-											<button
-												type="button"
-												onClick={() => handleSetLogoVisibility(true)}
-												disabled={logoVisibilityLoading}
-												className="btn-secondary !rounded-xl !py-3 !px-4 text-sm font-semibold disabled:opacity-60"
-											>
-												{logoVisibilityLoading ? "Saving..." : "Yes"}
-											</button>
-											<button
-												type="button"
-												onClick={() => handleSetLogoVisibility(false)}
-												disabled={logoVisibilityLoading}
-												className="btn-secondary !rounded-xl !py-3 !px-4 text-sm font-semibold disabled:opacity-60"
-											>
-												{logoVisibilityLoading ? "Saving..." : "No"}
-											</button>
-										</div>
-									)}
+									<Link
+										to={sellerLink}
+										className="text-base font-bold text-slate-900 dark:text-white hover:text-brand-600 transition-colors"
+									>
+										{sellerLabel}
+									</Link>
 								</div>
-							)}
-
-							{logoVisible === true && logoIsVerified && (
-								<div className="mt-3 space-y-2 text-sm opacity-90">
-									{typeof product?.logo_verification?.confidence === "number" && (
-										<p>
-											Match score:{" "}
-											{(product.logo_verification.confidence * 100).toFixed(1)}%
-										</p>
-									)}
-									{product?.logo_verification?.explanation && (
-										<p>{product.logo_verification.explanation}</p>
-									)}
-								</div>
-							)}
-
-							{logoVisible === true && !logoIsVerified && !logoStatusUnknown && (
-								<div className="mt-4 space-y-3">
-									<p className="text-xs opacity-80">
-										{isOwner
-											? "Verify now by uploading a logo image, or you can do it later anytime from this page."
-											: "Seller has not verified the logo yet."}
-									</p>
-
-									{canVerifyLogo && (
-										<>
-											<input
-												type="file"
-												accept="image/*"
-												onChange={(e) => {
-													setLogoVerifyFile(e.target.files?.[0] || null);
-													setLogoVerifyError("");
-												}}
-												className="input-field py-3 cursor-pointer file:hidden"
-											/>
-											<button
-												type="button"
-												onClick={handleVerifyLogo}
-												disabled={logoVerifyLoading}
-												className="btn-gradient w-full justify-center !py-3 disabled:opacity-60"
-											>
-												{logoVerifyLoading ? "Verifying..." : "Verify logo"}
-											</button>
-										</>
-									)}
-								</div>
-							)}
-
-							{logoVisibilityError && (
-								<div className="mt-3 rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4 text-sm text-rose-600 dark:text-rose-400">
-									{logoVisibilityError}
-								</div>
-							)}
-
-							{logoVerifyError && (
-								<div className="mt-3 rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4 text-sm text-rose-600 dark:text-rose-400">
-									{logoVerifyError}
-								</div>
-							)}
-						</div>
-						{!isOwner && (
-							<div className="mt-4 text-sm sm:text-base">
-								<p className="text-slate-500 dark:text-slate-400 uppercase tracking-[0.25em] text-[10px] mb-2">
-									Seller
-								</p>
-								<Link
-									to={sellerLink}
-									className="font-bold text-brand-600 dark:text-brand-400 hover:underline"
-								>
-									{sellerLabel}
-								</Link>
+								<span className="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20">
+									Direct Seller
+								</span>
 							</div>
-						)}
-						<div className="pt-8 space-y-4 border-t border-slate-200 dark:border-white/5">
+							<p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+								Interested in this item? Chat directly with the seller to discuss pricing, item condition, or coordinate local pickup and inspection.
+							</p>
+						</div>
+
+						<div className="pt-6 space-y-4 border-t border-slate-200 dark:border-white/5">
 							{!isOwner && (
 								<button
-									onClick={handleBuy}
-									disabled={escrowLoading}
-									className="btn-gradient w-full !rounded-xl !py-4 text-center disabled:opacity-50 disabled:cursor-not-allowed"
+									onClick={handleChatWithSeller}
+									disabled={chatLoading}
+									className="btn-gradient w-full !rounded-xl !py-4 text-center disabled:opacity-50 flex items-center justify-center gap-2 text-base font-bold shadow-lg"
 								>
-									{escrowLoading
-										? "Creating Secure Escrow..."
-										: "Secure Buy with Escrow"}
+									<svg
+										className="w-5 h-5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth="2"
+											d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+										/>
+									</svg>
+									{chatLoading ? "Starting Conversation..." : "Chat with Seller"}
 								</button>
 							)}
 							{!isOwner && (
@@ -758,36 +497,6 @@ if (url.startsWith("/uploads/")) return `${backendUrl}${url}`;
 											</span>
 										)}
 									</button>
-								</div>
-							)}
-							{!isOwner && (
-								<div className="p-4 bg-brand-500/5 dark:bg-brand-500/10 rounded-2xl border border-brand-500/10">
-									<div className="flex items-start gap-4">
-										<div className="w-10 h-10 rounded-full bg-brand-500 flex items-center justify-center text-white shrink-0">
-											<svg
-												className="w-5 h-5"
-												fill="none"
-												stroke="currentColor"
-												viewBox="0 0 24 24"
-											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth="2"
-													d="M13 10V3L4 14h7v7l9-11h-7z"
-												/>
-											</svg>
-										</div>
-										<div>
-											<h4 className="text-sm font-bold text-slate-900 dark:text-white">
-												AI Suggestion
-											</h4>
-											<p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-												Our ML model suggests this item is priced slightly below
-												market average. Excellent procurement opportunity.
-											</p>
-										</div>
-									</div>
 								</div>
 							)}
 						</div>

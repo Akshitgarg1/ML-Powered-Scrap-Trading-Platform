@@ -6,7 +6,6 @@ import {
 	getUserWatchlist,
 	addToWatchlist,
 	removeFromWatchlist,
-	getUserEarnings,
 } from "../services/api";
 
 const Profile = () => {
@@ -29,41 +28,27 @@ const Profile = () => {
 	// Update formData when user changes
 	useEffect(() => {
 		if (user) {
-			const address = user.address || {};
 			setFormData({
 				full_name: user.full_name || "",
 				phone: user.phone || "",
 				bio: user.bio || "",
 				profilePic: user.profilePic || "",
-				address_line1: address.line1 || user.address_line1 || "",
-				address_line2: address.line2 || user.address_line2 || "",
-				city: address.city || user.city || "",
-				state: address.state || user.state || "",
-				postal_code: address.postal_code || user.postal_code || "",
-				country: address.country || user.country || "",
+				address_line1: user.address?.line1 || "",
+				address_line2: user.address?.line2 || "",
+				city: user.address?.city || "",
+				state: user.address?.state || "",
+				postal_code: user.address?.postal_code || "",
+				country: user.address?.country || "",
 			});
 		}
 	}, [user]);
 	const [message, setMessage] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [watchlistIds, setWatchlistIds] = useState([]);
-	const [earningsData, setEarningsData] = useState({
-		currentBalance: 0,
-		totalEarned: 0,
-		totalCashedOut: 0,
-		loading: true,
-	});
 
 	useEffect(() => {
 		if (user) {
 			fetchWatchlist();
-			fetchEarningsData();
-
-			const interval = setInterval(() => {
-				fetchEarningsData();
-			}, 10000);
-
-			return () => clearInterval(interval);
 		}
 	}, [user]);
 
@@ -78,42 +63,6 @@ const Profile = () => {
 		} catch (err) {
 			console.error("Error fetching wishlist ids:", err);
 			setWatchlistIds([]);
-		}
-	};
-
-	const fetchEarningsData = async () => {
-		try {
-			setEarningsData((prev) => ({ ...prev, loading: true }));
-			console.log("Fetching earnings for user:", user.uid);
-			const earningsRes = await getUserEarnings(user.uid);
-			console.log("Earnings response:", earningsRes);
-
-			if (earningsRes.success) {
-				const earnings = earningsRes.earnings;
-				console.log("Earnings data:", earnings);
-				setEarningsData({
-					currentBalance: earnings.current_balance || 0,
-					totalEarned: earnings.total_earned || 0,
-					totalCashedOut: earnings.total_cashed_out || 0,
-					loading: false,
-				});
-			} else {
-				console.log("Earnings API failed:", earningsRes);
-				setEarningsData({
-					currentBalance: 0,
-					totalEarned: 0,
-					totalCashedOut: 0,
-					loading: false,
-				});
-			}
-		} catch (err) {
-			console.error("Error fetching earnings data:", err);
-			setEarningsData({
-				currentBalance: 0,
-				totalEarned: 0,
-				totalCashedOut: 0,
-				loading: false,
-			});
 		}
 	};
 
@@ -234,81 +183,25 @@ const Profile = () => {
 					</div>
 				</div>
 
-				<div className="mb-6 grid gap-3 sm:grid-cols-2">
-					<button
-						onClick={() => navigate("/my-orders")}
-						className="btn-secondary w-full !py-3 !px-5 text-sm text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-700"
-					>
-						My Orders
-					</button>
+				<div className="mb-8 grid gap-4 sm:grid-cols-2">
 					<button
 						onClick={() => navigate("/my-sold-items")}
-						className="btn-secondary w-full !py-3 !px-5 text-sm text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-700"
+						className="btn-secondary w-full !py-3.5 !px-5 text-sm font-bold flex items-center justify-center gap-2 text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl"
 					>
-						My Sold Items
+						<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+						</svg>
+						My Product Listings
 					</button>
-				</div>
-
-				{/* Earnings Section */}
-				<div className="mb-8 p-6 glass-panel-dark border border-white/10 rounded-2xl">
-					<div className="flex items-center justify-between mb-6">
-						<h3 className="text-xl font-display font-black text-slate-900 dark:text-white">
-							Earnings Dashboard
-						</h3>
-						<button
-							onClick={() => navigate("/cashout")}
-							className="btn-gradient !py-2 !px-6 text-sm font-bold shadow-lg"
-						>
-							Cashout Funds
-						</button>
-					</div>
-
-					{earningsData.loading ? (
-						<div className="flex items-center justify-center py-8">
-							<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-brand-500"></div>
-							<span className="ml-3 text-slate-600 dark:text-slate-400">
-								Loading earnings...
-							</span>
-						</div>
-					) : (
-						<div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-							<div className="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-								<p className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-2">
-									Available Balance
-								</p>
-								<p className="text-2xl font-black text-emerald-700 dark:text-emerald-300">
-									₹{earningsData.currentBalance.toFixed(2)}
-								</p>
-								<p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
-									Ready to cashout
-								</p>
-							</div>
-
-							<div className="text-center p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-								<p className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
-									Total Earned
-								</p>
-								<p className="text-2xl font-black text-blue-700 dark:text-blue-300">
-									₹{earningsData.totalEarned.toFixed(2)}
-								</p>
-								<p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-									All time earnings
-								</p>
-							</div>
-
-							<div className="text-center p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-								<p className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-2">
-									Total Cashed Out
-								</p>
-								<p className="text-2xl font-black text-amber-700 dark:text-amber-300">
-									₹{earningsData.totalCashedOut.toFixed(2)}
-								</p>
-								<p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-									Withdrawn funds
-								</p>
-							</div>
-						</div>
-					)}
+					<button
+						onClick={() => navigate("/messages")}
+						className="btn-secondary w-full !py-3.5 !px-5 text-sm font-bold flex items-center justify-center gap-2 text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl"
+					>
+						<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+						</svg>
+						Direct Messages & Inquiries
+					</button>
 				</div>
 
 				{/* Dynamic Form / View Area */}

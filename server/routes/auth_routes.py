@@ -1,6 +1,6 @@
 # server/routes/auth_routes.py
 """
-Authentication Routes
+Authentication Routes for FastAPI
 
 Handles:
 - User registration
@@ -9,51 +9,45 @@ Handles:
 - Profile update
 """
 
-from flask import Blueprint, request, jsonify, current_app
-import jwt
+import os
+import re
+import uuid
 import datetime
 import bcrypt
-import uuid
-import re
+import jwt
+from typing import Optional, Dict, Any
 
+from fastapi import APIRouter, Depends, HTTPException, status, Body
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, EmailStr
 from firebase_admin import db
-from utils.auth_helper import token_required
 
+from utils.auth_helper import get_current_user
 
-# =====================================================
-# Blueprint Configuration
-# =====================================================
-
-auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
-
-
-# =====================================================
-# Helper Functions
-# =====================================================
+auth_router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 EMAIL_REGEX = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 PHONE_REGEX = re.compile(r"^[6-9][0-9]{9}$")
 
 
-def normalize_input(value):
+def normalize_input(value: str) -> str:
     """Normalize user input for consistent comparison."""
-    return value.lower().strip()
+    return str(value or "").lower().strip()
 
 
-def is_valid_email(email):
+def is_valid_email(email: str) -> bool:
     """Validate email format."""
-    return bool(EMAIL_REGEX.match(email.strip()))
+    return bool(EMAIL_REGEX.match(str(email or "").strip()))
 
 
-def is_valid_phone(phone):
+def is_valid_phone(phone: str) -> bool:
     """Validate Indian 10-digit mobile number."""
-    trimmed = phone.strip()
+    trimmed = str(phone or "").strip()
     return bool(trimmed and PHONE_REGEX.match(trimmed))
 
 
-def user_exists(username, email):
+def user_exists(username: str, email: str) -> bool:
     """Check if username or email already exists."""
-    
     users_ref = db.reference("users")
     users = users_ref.get()
 
@@ -64,26 +58,27 @@ def user_exists(username, email):
     email_clean = normalize_input(email)
 
     for uid, user in users.items():
-        if user.get("username", "").lower() == username_clean:
+        if not isinstance(user, dict):
+            continue
+        if normalize_input(user.get("username", "")) == username_clean:
             return True
-        if user.get("email", "").lower() == email_clean:
+        if normalize_input(user.get("email", "")) == email_clean:
             return True
 
     return False
 
 
-def generate_token(user_id):
+def generate_token(user_id: str) -> str:
     """Generate JWT token for authentication."""
-    
+    secret_key = os.getenv("SECRET_KEY", "your-secret-key")
     token = jwt.encode(
         {
             "user_id": user_id,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24),
         },
-        current_app.config["SECRET_KEY"],
-        algorithm="HS256"
+        secret_key,
+        algorithm="HS256",
     )
-
     return token
 
 
@@ -91,60 +86,55 @@ def generate_token(user_id):
 # Routes
 # =====================================================
 
-@auth_bp.route("/register", methods=["POST"])
-def register():
+@auth_router.post("/register", status_code=status.HTTP_201_CREATED)
+async def register(payload: Dict[str, Any] = Body(...)):
     """Register a new user."""
+    username = payload.get("username")
+    email = payload.get("email")
+    password = payload.get("password")
 
-    data = request.get_json()
-
-    username = data.get("username")
-    email = data.get("email")
-    password = data.get("password")
-
-    full_name = data.get("full_name", "")
-    phone = data.get("phone", "")
+    full_name = payload.get("full_name", "")
+    phone = payload.get("phone", "")
 
     if not username or not email or not password:
-        return jsonify({
-            "success": False,
-            "message": "Required fields missing!"
-        }), 400
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": "Required fields missing!"},
+        )
 
-    email = email.strip()
-    phone = phone.strip()
+    email = str(email).strip()
+    phone = str(phone).strip()
     username_clean = normalize_input(username)
     email_clean = normalize_input(email)
 
     if not is_valid_email(email):
-        return jsonify({
-            "success": False,
-            "message": "Enter a valid email address."
-        }), 400
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": "Enter a valid email address."},
+        )
 
-    if len(password) < 6:
-        return jsonify({
-            "success": False,
-            "message": "Password must be at least 6 characters."
-        }), 400
+    if len(str(password)) < 6:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": "Password must be at least 6 characters."},
+        )
 
     if phone and not is_valid_phone(phone):
-        return jsonify({
-            "success": False,
-            "message": "Enter a valid 10-digit Indian phone number."
-        }), 400
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": "Enter a valid 10-digit Indian phone number."},
+        )
 
     # Check existing user
     if user_exists(username_clean, email_clean):
-        return jsonify({
-            "success": False,
-            "message": "Username or email already registered!"
-        }), 409
+        return JSONResponse(
+            status_code=409,
+            content={"success": False, "message": "Username or email already registered!"},
+        )
 
     # Password hashing
     salt = bcrypt.gensalt()
-    hashed_pw = bcrypt.hashpw(
-        password.encode("utf-8"), salt
-    ).decode("utf-8")
+    hashed_pw = bcrypt.hashpw(str(password).encode("utf-8"), salt).decode("utf-8")
 
     uid = str(uuid.uuid4())
 
@@ -156,32 +146,32 @@ def register():
         "phone": phone,
         "createdAt": datetime.datetime.utcnow().isoformat() + "Z",
         "profilePic": f"https://ui-avatars.com/api/?name={username_clean}&background=random",
-        "bio": "New member of the TradeSmart community."
+        "bio": "New member of the TradeSmart community.",
     }
 
     db.reference(f"users/{uid}").set(new_user)
 
-    return jsonify({
-        "success": True,
-        "message": "Registration successful!",
-        "uid": uid
-    }), 201
+    return JSONResponse(
+        status_code=201,
+        content={
+            "success": True,
+            "message": "Registration successful!",
+            "uid": uid,
+        },
+    )
 
 
-@auth_bp.route("/login", methods=["POST"])
-def login():
+@auth_router.post("/login")
+async def login(payload: Dict[str, Any] = Body(...)):
     """Authenticate user and return JWT token."""
-
-    data = request.get_json()
-
-    identifier = normalize_input(data.get("identifier", ""))
-    password = data.get("password")
+    identifier = normalize_input(payload.get("identifier", ""))
+    password = payload.get("password")
 
     if not identifier or not password:
-        return jsonify({
-            "success": False,
-            "message": "Enter username/email and password!"
-        }), 400
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": "Enter username/email and password!"},
+        )
 
     users = db.reference("users").get()
 
@@ -192,26 +182,37 @@ def login():
     target_user = None
 
     for uid, user in users.items():
-        if user.get("username") == identifier or user.get("email") == identifier:
+        if not isinstance(user, dict):
+            continue
+        if (
+            normalize_input(user.get("username", "")) == identifier
+            or normalize_input(user.get("email", "")) == identifier
+        ):
             target_uid = uid
             target_user = user
             break
 
-    if not target_user:
-        return jsonify({
-            "success": False,
-            "message": "Incorrect credentials!"
-        }), 401
+    if not target_user or "password" not in target_user:
+        return JSONResponse(
+            status_code=401,
+            content={"success": False, "message": "Incorrect credentials!"},
+        )
 
     # Password check
-    if not bcrypt.checkpw(
-        password.encode("utf-8"),
-        target_user["password"].encode("utf-8")
-    ):
-        return jsonify({
-            "success": False,
-            "message": "Incorrect credentials!"
-        }), 401
+    try:
+        if not bcrypt.checkpw(
+            str(password).encode("utf-8"),
+            str(target_user["password"]).encode("utf-8"),
+        ):
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "message": "Incorrect credentials!"},
+            )
+    except Exception:
+        return JSONResponse(
+            status_code=401,
+            content={"success": False, "message": "Incorrect credentials!"},
+        )
 
     token = generate_token(target_uid)
 
@@ -220,75 +221,65 @@ def login():
     public_user.pop("password", None)
     public_user["uid"] = target_uid
 
-    return jsonify({
+    return {
         "success": True,
         "message": "Login successful!",
         "token": token,
-        "user": public_user
-    }), 200
+        "user": public_user,
+    }
 
 
-@auth_bp.route("/profile", methods=["GET"])
-@token_required
-def get_profile(current_user):
+@auth_router.get("/profile")
+async def get_profile(current_user: dict = Depends(get_current_user)):
     """Return logged-in user's profile."""
-
     profile = current_user.copy()
     profile.pop("password", None)
 
-    return jsonify({
-        "success": True,
-        "profile": profile
-    }), 200
+    return {"success": True, "profile": profile}
 
 
-@auth_bp.route("/user/<user_id>", methods=["GET"])
-def get_user_by_id(user_id):
+@auth_router.get("/user/{user_id}")
+async def get_user_by_id(user_id: str):
     """Return public user profile by user ID."""
     user_data = db.reference(f"users/{user_id}").get()
-    if not user_data:
-        return jsonify({"success": False, "error": "User not found"}), 404
+    if not user_data or not isinstance(user_data, dict):
+        return JSONResponse(
+            status_code=404,
+            content={"success": False, "error": "User not found"},
+        )
 
     public_user = user_data.copy()
     public_user.pop("password", None)
     public_user["uid"] = user_id
 
-    return jsonify({"success": True, "user": public_user}), 200
+    return {"success": True, "user": public_user}
 
 
-@auth_bp.route("/profile", methods=["PUT"])
-@token_required
-def update_profile(current_user):
+@auth_router.put("/profile")
+async def update_profile(
+    payload: Dict[str, Any] = Body(...),
+    current_user: dict = Depends(get_current_user),
+):
     """Update user profile."""
-
-    data = request.get_json()
     uid = current_user["uid"]
-
     user_ref = db.reference(f"users/{uid}")
 
     updates = {}
-
-    if "full_name" in data:
-        updates["full_name"] = data["full_name"]
-
-    if "phone" in data:
-        updates["phone"] = data["phone"]
-
-    if "bio" in data:
-        updates["bio"] = data["bio"]
-
-    if "profilePic" in data:
-        updates["profilePic"] = data["profilePic"]
+    if "full_name" in payload:
+        updates["full_name"] = payload["full_name"]
+    if "phone" in payload:
+        updates["phone"] = payload["phone"]
+    if "bio" in payload:
+        updates["bio"] = payload["bio"]
+    if "profilePic" in payload:
+        updates["profilePic"] = payload["profilePic"]
 
     if not updates:
-        return jsonify({
-            "success": False,
-            "message": "No changes detected!"
-        }), 400
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": "No changes detected!"},
+        )
 
     user_ref.update(updates)
 
-    return jsonify({
-        "success": True,
-        "message": "Profile updated successfully!"
-    }), 200
+    return {"success": True, "message": "Profile updated successfully!"}

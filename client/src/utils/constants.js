@@ -1,9 +1,3 @@
-export const API_URLS = {
-  BASE: 'http://localhost:5050/api',
-  PREDICT_PRICE: '/ai/predict-price',
-  HEALTH: '/health'
-}
-
 export const LISTING_CATEGORY_OPTIONS = [
 	{ value: "electronics", label: "Electronics & Gadgets" },
 	{ value: "mobile_devices", label: "Smartphones & Tablets" },
@@ -24,19 +18,6 @@ export const LISTING_CATEGORY_OPTIONS = [
 	{ value: "kids", label: "Kids & Baby Products" },
 	{ value: "outdoor", label: "Outdoor & Travel" },
 ];
-
-export const PRICE_CATEGORY_OPTIONS = [
-  { value: 'laptop_ultrabook', label: 'Laptops & Ultrabooks', modelValue: 'Laptop' },
-  { value: 'laptop_gaming', label: 'Gaming Desktops / PCs', modelValue: 'Laptop' },
-  { value: 'mobile_flagship', label: 'Flagship Smartphones', modelValue: 'Mobile' },
-  { value: 'mobile_budget', label: 'Budget Smartphones / Tablets', modelValue: 'Mobile' },
-  { value: 'furniture_premium', label: 'Premium Furniture', modelValue: 'Furniture' },
-  { value: 'furniture_basic', label: 'Essential Furniture', modelValue: 'Furniture' },
-  { value: 'bike_motorcycle', label: 'Motorcycles / Scooters', modelValue: 'Bike' },
-  { value: 'bike_cycle', label: 'Bicycles & E-Bikes', modelValue: 'Bike' },
-  { value: 'camera_pro', label: 'Professional Cameras', modelValue: 'Camera' },
-  { value: 'camera_compact', label: 'Compact Cameras & Drones', modelValue: 'Camera' },
-]
 
 export const CONDITIONS = [
   'Excellent',

@@ -190,58 +190,6 @@ class ProductsAPI:
         return FirebaseDB.delete('products', product_id)
 
 
-class EscrowAPI:
-    """Escrow records operations"""
-    
-    @staticmethod
-    def get_all():
-        """Get all escrow records"""
-        escrow = FirebaseDB.get_all('escrow')
-        return list(escrow.values()) if escrow else []
-    
-    @staticmethod
-    def get_by_id(escrow_id: str):
-        """Get escrow record by ID"""
-        return FirebaseDB.get_one('escrow', escrow_id)
-    
-    @staticmethod
-    def get_by_user(user_id: str):
-        """Get escrow records involving a user"""
-        escrow = FirebaseDB.get_all('escrow')
-        if not escrow:
-            return []
-        
-        results = []
-        for escrow_id, record in escrow.items():
-            if record.get('buyer_id') == user_id or record.get('seller_id') == user_id:
-                record['id'] = escrow_id
-                results.append(record)
-        return results
-    
-    @staticmethod
-    def create(escrow_id: str, escrow_data: Dict):
-        """Create escrow record"""
-        return FirebaseDB.create('escrow', escrow_id, escrow_data)
-    
-    @staticmethod
-    def update(escrow_id: str, updates: Dict):
-        """Update escrow record"""
-        return FirebaseDB.update('escrow', escrow_id, updates)
-    
-    @staticmethod
-    def add_timeline_event(escrow_id: str, event: Dict):
-        """Add timeline event to escrow"""
-        try:
-            ref = db.reference(f'escrow/{escrow_id}/timeline')
-            timeline = ref.get() or []
-            timeline.append(event)
-            ref.set(timeline)
-            return True
-        except Exception as e:
-            print(f"Error adding timeline event: {e}")
-            return False
-
-
 class FeedbackAPI:
     """Feedback operations"""
     
@@ -263,6 +211,16 @@ class FeedbackAPI:
     def add_product_feedback(feedback_id: str, feedback_data: Dict):
         """Add feedback to product"""
         return FirebaseDB.create('feedback/product', feedback_id, feedback_data)
+
+    @staticmethod
+    def get_product_feedback_by_id(feedback_id: str):
+        """Get product feedback by ID"""
+        return FirebaseDB.get_one('feedback/product', feedback_id)
+
+    @staticmethod
+    def delete_product_feedback(feedback_id: str):
+        """Delete product feedback by ID"""
+        return FirebaseDB.delete('feedback/product', feedback_id)
     
     @staticmethod
     def get_general_feedback():
@@ -323,80 +281,7 @@ class MessagesAPI:
         """Create new message thread"""
         return FirebaseDB.create('messages', thread_id, thread_data)
 
-class AIPredictionsAPI:
-    """AI Prediction Logs operations"""
-    
-    @staticmethod
-    def log_prediction(prediction_id: str, data: Dict):
-        """Log a new ML prediction"""
-        return FirebaseDB.create('ai_predictions', prediction_id, data)
-        
-    @staticmethod
-    def get_by_model(model_name: str):
-        """Get predictions by model used"""
-        return FirebaseDB.query_filter('ai_predictions', 'model_used', model_name)
-        
-    @staticmethod
-    def update_feedback(prediction_id: str, feedback: bool):
-        """Update user feedback for a prediction"""
-        return FirebaseDB.update('ai_predictions', prediction_id, {'user_feedback': feedback})
 
-class WalletAPI:
-    """User Wallet operations"""
-    
-    @staticmethod
-    def get_balance(user_id: str):
-        """Get user wallet balance"""
-        wallet = FirebaseDB.get_one('wallets', user_id)
-        if not wallet:
-            # Initialize empty wallet
-            wallet = {'balance': 0.0, 'currency': 'INR', 'last_updated_at': datetime.now().isoformat()}
-            FirebaseDB.create('wallets', user_id, wallet)
-        return wallet
-        
-    @staticmethod
-    def add_transaction(transaction_id: str, user_id: str, amount: float, t_type: str, status: str = "COMPLETED"):
-        """Record wallet transaction and update balance"""
-        data = {
-            'user_id': user_id,
-            'amount': amount,
-            'type': t_type,
-            'status': status,
-            'timestamp': datetime.now().isoformat()
-        }
-        success = FirebaseDB.create('wallet_transactions', transaction_id, data)
-        if success and status == "COMPLETED":
-            # Update wallet balance atomically
-            try:
-                ref = db.reference(f'wallets/{user_id}/balance')
-                ref.transaction(lambda current_bal: (current_bal or 0.0) + amount)
-            except Exception as e:
-                print(f"Error updating wallet balance: {e}")
-                return False
-        return success
-
-class DisputesAPI:
-    """Dispute operations for Escrows"""
-    
-    @staticmethod
-    def open_dispute(dispute_id: str, data: Dict):
-        """Open a new dispute"""
-        return FirebaseDB.create('disputes', dispute_id, data)
-        
-    @staticmethod
-    def get_by_escrow(escrow_id: str):
-        """Get dispute by associated escrow"""
-        return FirebaseDB.query_filter('disputes', 'escrow_id', escrow_id)
-        
-    @staticmethod
-    def resolve_dispute(dispute_id: str, resolution: str):
-        """Resolve a dispute"""
-        updates = {
-            'status': 'RESOLVED',
-            'admin_resolution': resolution,
-            'resolved_at': datetime.now().isoformat()
-        }
-        return FirebaseDB.update('disputes', dispute_id, updates)
 
 class UserRatingsAPI:
     """Peer-to-peer user ratings operations"""
@@ -447,10 +332,6 @@ class ShipmentsAPI:
         """Create a new shipment record"""
         return FirebaseDB.create('shipments', shipment_id, data)
         
-    @staticmethod
-    def get_by_escrow(escrow_id: str):
-        """Get shipment by escrow Id"""
-        return FirebaseDB.query_filter('shipments', 'escrow_id', escrow_id)
         
     @staticmethod
     def update_status(shipment_id: str, status: str, location: str = ""):

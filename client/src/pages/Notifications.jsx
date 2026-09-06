@@ -18,7 +18,7 @@ const Notifications = () => {
 	const [selectedNotifications, setSelectedNotifications] = useState(new Set());
 	const hasAutoMarkedRef = useRef(false);
 	const isAutoMarkingRef = useRef(false);
-	const currentUserId = user?.uid || localStorage.getItem("escrow_user_id");
+	const currentUserId = user?.uid || localStorage.getItem("user_id");
 
 	useEffect(() => {
 		if (currentUserId) {
@@ -66,14 +66,16 @@ const Notifications = () => {
 		}
 	};
 
-	const handleMarkAsRead = async (notifId, escrowId, notifType) => {
+	const handleMarkAsRead = async (notif) => {
 		try {
-			await markNotificationAsRead(notifId, currentUserId);
-			fetchNotifications();
-			if (escrowId) {
-				navigate(`/escrow/${escrowId}`, {
-					state: { messageEnabled: notifType === "PAYMENT_RECEIVED" },
-				});
+			if (!notif?.read) {
+				await markNotificationAsRead(notif.notification_id, currentUserId);
+				fetchNotifications();
+			}
+			if (notif?.type === "MESSAGE") {
+				navigate("/messages");
+			} else if (notif?.related_product_id) {
+				navigate(`/product/${notif.related_product_id}`);
 			}
 		} catch (err) {
 			console.error("Error marking as read:", err);
@@ -108,13 +110,8 @@ const Notifications = () => {
 				"bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
 			MESSAGE:
 				"bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400",
-			PAYMENT_RECEIVED:
-				"bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
 			PRODUCT_SHIPPED:
 				"bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400",
-			PAYMENT_RELEASED:
-				"bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
-			DISPUTE: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
 		};
 		return (
 			colors[type] ||
@@ -126,10 +123,7 @@ const Notifications = () => {
 		const icons = {
 			PURCHASE: "🛒",
 			MESSAGE: "💬",
-			PAYMENT_RECEIVED: "💳",
 			PRODUCT_SHIPPED: "📦",
-			PAYMENT_RELEASED: "✅",
-			DISPUTE: "⚠️",
 		};
 		return icons[type] || "📢";
 	};
@@ -150,13 +144,7 @@ const Notifications = () => {
 	const filteredNotifications = notifications.filter((n) => {
 		if (filter === "unread") return !n.read;
 		if (filter === "transaction")
-			return [
-				"PURCHASE",
-				"PAYMENT_RECEIVED",
-				"PRODUCT_SHIPPED",
-				"PAYMENT_RELEASED",
-				"DISPUTE",
-			].includes(n.type);
+			return ["PURCHASE", "PRODUCT_SHIPPED"].includes(n.type);
 		if (filter === "message") return n.type === "MESSAGE";
 		return true;
 	});
@@ -289,14 +277,7 @@ const Notifications = () => {
 										? "bg-brand-50 dark:bg-brand-500/5 border-l-4 border-l-brand-500"
 										: ""
 								}`}
-								onClick={() =>
-									notif.related_escrow_id &&
-									handleMarkAsRead(
-										notif.notification_id,
-										notif.related_escrow_id,
-										notif.type,
-									)
-								}
+								onClick={() => handleMarkAsRead(notif)}
 							>
 								<div className="flex items-start gap-4">
 									{/* Icon */}

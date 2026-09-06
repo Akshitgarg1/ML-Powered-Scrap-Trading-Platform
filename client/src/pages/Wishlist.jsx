@@ -78,7 +78,7 @@ const Wishlist = () => {
 					</h1>
 					<p className="mt-4 mx-auto max-w-xl text-slate-500 dark:text-slate-400">
 						Keep track of exclusive assets and high-value second-hand
-						opportunities before you initiate the secure escrow protocol.
+						opportunities before you connect with the seller.
 					</p>
 				</div>
 

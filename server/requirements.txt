@@ -17,8 +17,9 @@ cycler==0.12.1
 distlib==0.4.0
 filelock==3.19.1
 firebase_admin==7.3.0
-Flask==3.1.2
-flask-cors==6.0.1
+fastapi==0.138.0
+uvicorn==0.49.0
+python-multipart==0.0.32
 flatbuffers==25.9.23
 fonttools==4.60.1
 gast==0.6.0
@@ -83,7 +84,6 @@ scipy==1.16.3
 setuptools==80.9.0
 six==1.17.0
 stegano==2.0.0
-stripe==15.0.1
 tensorboard==2.20.0
 tensorboard-data-server==0.7.2
 tensorflow==2.20.0

@@ -5,14 +5,11 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import Navbar from "./components/common/Navbar";
 import Home from "./pages/Home";
-import PricePredictionPage from "./pages/PricePredictor";
-import ImageSearchPage from "./pages/ImageSearchPage";
 import BrowseProducts from "./pages/BrowseProducts";
 import SellProduct from "./pages/SellProduct";
 import ProductDetails from "./pages/ProductDetails";
-import TransactionDashboard from "./pages/TransactionDashboard";
+import Messages from "./pages/Messages";
 import Wishlist from "./pages/Wishlist";
-import LogoVerifierPage from "./pages/LogoVerifier";
 import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
@@ -20,10 +17,7 @@ import SellerProfile from "./pages/SellerProfile";
 import Notifications from "./pages/Notifications";
 import MyOrders from "./pages/MyOrders";
 import MySoldItems from "./pages/MySoldItems";
-import MySoldItemTransactions from "./pages/MySoldItemTransactions";
 import MyAddress from "./pages/MyAddress";
-import StripePaymentPage from "./pages/VirtualPaymentPage";
-import Cashout from "./pages/Cashout";
 import Footer from "./components/common/Footer";
 import BackToTop from "./components/common/BackToTop";
 import "./config/firebase";
@@ -39,12 +33,6 @@ function App() {
 							<Routes>
 								<Route path="/" element={<Home />} />
 								<Route path="/browse" element={<BrowseProducts />} />
-								<Route
-									path="/price-predictor"
-									element={<PricePredictionPage />}
-								/>
-								<Route path="/image-search" element={<ImageSearchPage />} />
-								<Route path="/logo-verifier" element={<LogoVerifierPage />} />
 								<Route path="/product/:id" element={<ProductDetails />} />
 								<Route path="/seller/:sellerId" element={<SellerProfile />} />
 								<Route path="/signin" element={<Signin />} />
@@ -59,18 +47,18 @@ function App() {
 									}
 								/>
 								<Route
-									path="/escrow/:escrowId"
+									path="/messages"
 									element={
 										<ProtectedRoute>
-											<TransactionDashboard />
+											<Messages />
 										</ProtectedRoute>
 									}
 								/>
 								<Route
-									path="/payment/:escrowId"
+									path="/messages/:threadId"
 									element={
 										<ProtectedRoute>
-											<StripePaymentPage />
+											<Messages />
 										</ProtectedRoute>
 									}
 								/>
@@ -99,14 +87,6 @@ function App() {
 									}
 								/>
 								<Route
-									path="/my-sold-items/:productId"
-									element={
-										<ProtectedRoute>
-											<MySoldItemTransactions />
-										</ProtectedRoute>
-									}
-								/>
-								<Route
 									path="/notifications"
 									element={
 										<ProtectedRoute>
@@ -127,14 +107,6 @@ function App() {
 									element={
 										<ProtectedRoute>
 											<Profile />
-										</ProtectedRoute>
-									}
-								/>
-								<Route
-									path="/cashout"
-									element={
-										<ProtectedRoute>
-											<Cashout />
 										</ProtectedRoute>
 									}
 								/>

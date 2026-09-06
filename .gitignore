@@ -75,9 +75,8 @@ Dataset/
 archive/
 uploads/
 
-# Explicitly allow committing the trained models for production deployment
-!server/ml_models/price_model.joblib
-!server/ml_models/logo_auth_classifier.pkl
+# Explicitly allow client configuration files
+!client/src/config/
 
 
 # ==========================================
@@ -105,6 +104,7 @@ firebaseConfig.js
 config.js
 instance/
 config/
+!client/src/config/
 
 # # Temp files
 *.tmp

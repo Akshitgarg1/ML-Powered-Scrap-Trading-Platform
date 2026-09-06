@@ -27,9 +27,8 @@ const SellProduct = () => {
 					List Your <span className="text-gradient">Pre-owned Assets</span>
 				</h1>
 				<p className="mt-3 sm:mt-6 mx-auto max-w-2xl text-xs sm:text-sm md:text-lg text-slate-600 dark:text-slate-400">
-					Our intelligent listing process helps you showcase products with trust
-					indicators, AI-driven pricing, and visual verification to attract
-					serious buyers.
+					List your items with clear photos, condition grading, and fair
+					pricing to connect with serious buyers directly.
 				</p>
 			</div>
 

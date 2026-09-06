@@ -14,8 +14,8 @@ const BrowseProducts = () => {
 				</h1>
 				<p className="mt-3 sm:mt-6 mx-auto max-w-2xl text-xs sm:text-sm md:text-lg text-slate-600 dark:text-slate-400">
 					Connect with trusted sellers and browse high-quality pre-owned
-					products. Use our AI filters to find specific items or verify
-					authenticity instantly.
+					products. Filter by category, condition, and price to find the
+					perfect deal.
 				</p>
 			</div>
 
